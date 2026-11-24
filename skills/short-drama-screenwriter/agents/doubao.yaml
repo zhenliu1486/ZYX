@@ -1,0 +1,7 @@
+interface:
+  display_name: "短剧编剧套路"
+  short_description: "女频男频爆款模板与钩子"
+  default_prompt: "使用 $short-drama-screenwriter 帮我完成……"
+
+policy:
+  allow_implicit_invocation: true

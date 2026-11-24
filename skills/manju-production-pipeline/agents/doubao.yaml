@@ -1,0 +1,7 @@
+interface:
+  display_name: "漫剧全流程制作"
+  short_description: "剧本到成片全流程SOP"
+  default_prompt: "使用 $manju-production-pipeline 帮我完成……"
+
+policy:
+  allow_implicit_invocation: true

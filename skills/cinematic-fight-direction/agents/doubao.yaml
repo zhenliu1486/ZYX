@@ -1,0 +1,7 @@
+interface:
+  display_name: "电影级打斗分镜"
+  short_description: "打斗运镜与动作提示词模板"
+  default_prompt: "使用 $cinematic-fight-direction 帮我完成……"
+
+policy:
+  allow_implicit_invocation: true

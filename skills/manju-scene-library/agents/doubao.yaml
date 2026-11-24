@@ -1,0 +1,7 @@
+interface:
+  display_name: "漫剧场景资产库"
+  short_description: "3000+场景提示词与光影模板"
+  default_prompt: "使用 $manju-scene-library 帮我完成……"
+
+policy:
+  allow_implicit_invocation: true

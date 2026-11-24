@@ -1,11 +1,11 @@
 ---
 name: zyx
-description: zyx 总调度台（薄壳路由入口）。当用户要把人、行业、长内容（书/长视频/播客/课程/访谈）蒸馏成 Skill，要处理当下的商业/文案/决策问题，要做影视/短剧/漫剧内容生产，或要对已有产物二次迭代时使用。只判断原料属于哪一类，转发给女娲 nuwa-skill、大师 master-skill、仓颉 cangjie-skill、dbs 家族、video-studio 聚合层或 f2r 迭代器，不自行产出方法论；产物按「生成它的 Skill 名分目录」落到桌面产物目录，再由 zyx 统一回传。触发词：zyx、调度、路由、造 skill、蒸馏、拆书、做个 X 的 master、我是 X 行业、诊断我的生意、这篇文案行不行、写短剧剧本、出分镜、改这版产物。
+description: zyx 总调度台（薄壳路由入口）。当用户要把人、行业、长内容（书/长视频/播客/课程/访谈）蒸馏成 Skill，处理当下商业/文案/决策问题，做影视/短剧/漫剧内容生产，或对已有产物二次迭代时使用。只判断原料属于哪一类并转发给对应蒸馏器/聚合层，不自行产出方法论；产物按生成它的 Skill 名分目录落盘后统一回传。生产类触发词：zyx、调度、路由、造 skill、蒸馏、拆书、做个 X 的 master、我是 X 行业、诊断我的生意、这篇文案行不行、写短剧剧本、出分镜、改这版产物。
 license: MIT
 compatibility: 兼容 Claude Code / Codex / OpenClaw / Hermes / Kiro / Cline 等 Agent Skills 标准宿主；引用外部蒸馏器路径，需与它们同机安装。
 metadata:
   author: "ZYX"
-  version: "1.0.2"
+  version: "1.1.0"
   layer: "1-router"
   schema: "agentskills.io"
 allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
@@ -23,15 +23,20 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 ├── references/
 │   ├── routing-table.md               #   六类原料的判定信号与分流规则
 │   └── artifact-layout.md            #   产物目录命名与回传规范（与 shared/artifacts 对齐）
+├── deps/
+│   └── manifest.json                 #   依赖声明清单（来源/安装命令/必需可选/子技能归属），doctor/updater/install 共用
 ├── scripts/
 │   ├── route.sh                       #   打印当前路由决策与被调 Skill 路径
+│   ├── lib-common.sh                  #   共用：宿主目录探测、清单读取（被各脚本 source）
+│   ├── deps.py                        #   manifest.json 读取器（宿主目录/依赖行/git 仓库）
+│   ├── check-integrity.py             #   扫描 Markdown 悬空引用与缺失文件
 │   ├── env-registry.sh                #   首次触发探测环境并注册后台更新任务（幂等）
-│   ├── updater.sh                      #   后台静默更新器：快进更新 + 备份回滚 + 失败计数 + drift 报告 + 自身版本检查
+│   ├── updater.sh                      #   后台静默更新器：快进更新 + 备份回滚 + 失败计数 + drift 报告 + 自身版本/SHA 检查
 │   ├── check-updates.sh              #   手动检查入口（复用 updater 检查逻辑，只读报告）
 │   ├── desktop-dir.sh                #   桌面目录跨平台探测与回退顺序
 │   ├── artifact-dir.sh                #   给定来源+产物名+日期，返回/创建规范产物目录
-│   └── doctor.sh                      #   自检：就绪状态、缺什么、怎么补
-├── evals/                             #   路由回归用例（人/行业/内容/问题/生产/迭代）
+│   └── doctor.sh                      #   自检：就绪状态、依赖状态、文件完整性、缺什么、怎么补
+├── evals/                             #   路由回归用例（人/行业/内容/问题/生产/迭代/降级/版本/脱敏）
 ├── state/                             #   注册状态、更新日志、备份 HEAD（本机运行态，不发布）
 ├── shared/                            # 第 3 层：共享底座（抽自三方重复部分）
 │   ├── verification/                  #   增量认知校验 + 三重交叉验证
@@ -50,8 +55,11 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 | R2 | 大师 `master-skill` | swaylq/master-skill | 蒸馏**一个细分行业**的 Master OS（Phase 3 内部调女娲出人物 sub-skill） |
 | R3 | 仓颉 `cangjie-skill` | kangarooking/cangjie-skill | 蒸馏**长内容**（书/长视频/播客/课程/访谈）的方法论为 Skill 包 |
 | R4 | dbs 家族 | dontbesilent2025/dbskill | 处理**当下问题**：商业诊断、文案、决策复盘、协作派单（不产出新 Skill） |
-| R5 | `video-studio` 聚合层 | 本地聚合（子技能见其 SKILL.md） | **影视/短剧/漫剧内容生产**：内部路由剧本、编剧、人物、场景、动作分镜、表情参数、全流程 SOP |
-| R6 | `f2r-feedback-iteration` | 本地打磨类子技能 | **已有产物二次迭代**：按反馈显性化为规则，小样本迭代 + 回归测试 |
+| R5 | `video-studio` 聚合层 | 随仓库内置（子技能随仓库内置） | **影视/短剧/漫剧内容生产**：内部路由剧本、编剧、人物、场景、动作分镜、表情参数、全流程 SOP |
+| R6 | `f2r-feedback-iteration` | 随仓库内置 | **已有产物二次迭代**：按反馈显性化为规则，小样本迭代 + 回归测试 |
+| 可选 | `darwin-skill` | alchaincyf/darwin-skill | Darwin 式压测本体；`shared/darwin/` 只引用口径，不内嵌本体 |
+
+> 依赖的来源、安装命令、必需/可选与子技能归属，统一登记在 `deps/manifest.json`；新增或调整依赖只改这一份清单。
 
 ## 2. 工作流程（首次自注册 → 路由 → 转发 → 收口）
 
@@ -98,9 +106,19 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 
 - **首次自注册**：首次调用 zyx 时 `env-registry.sh` 探测环境并注册周检任务，之后在后台持续运行；注册状态在 `state/registry.json`，重复调用幂等不重复注册。
 - **静默更新器** `updater.sh`：每周日 18:00（或手动）执行：
-  1. 对女娲/大师/仓颉三个 git 蒸馏器做 `--ff-only` 快进更新；本地有未提交改动或分叉时不强行覆盖，保留本地并记录；更新前备份 HEAD 到 `state/backup/`。
-  2. 检查 **zyx 自身版本**：拉取远端 `skills/zyx/SKILL.md` 版本号与本地比对，输出最新/落后/超前；落后时提示人工确认更新，自身快进覆盖仍预留不自动执行。仓库与分支可用 `ZYX_REPO` / `ZYX_BRANCH` 环境变量覆盖。
+  1. 对清单内 `source=git` 的蒸馏器（女娲/大师/仓颉；达尔文可选）做 `--ff-only` 快进更新；本地有未提交改动或分叉时不强行覆盖，保留本地并记录；更新前备份 HEAD 到 `state/backup/`。
+  2. 检查 **zyx 自身版本**：拉取远端版本号与 HEAD SHA 同本地比对，输出最新/落后/超前；落后时提示人工确认更新，自身快进覆盖仍预留不自动执行。仓库与分支可用 `ZYX_REPO` / `ZYX_BRANCH` 环境变量覆盖。
   3. dbs 家族只比对官方版本并记录差异，不批量自动覆盖（目录式安装，由 dbs-update 处理）。
-  4. 失败计数写入 `state/fail-count.json`；连续失败达阈值在下次对话提示；`--check-drift` 输出 drift 报告。
+  4. 失败计数写入 `state/fail-count.json`；连续失败达阈值（`ZYX_FAIL_THRESHOLD`，默认 3）在下次对话提示；`--check-drift` 输出 drift 报告。
 - **日志**：更新过程写入 `state/updater.log`；`--silent` 模式不在前台打印。
-- **安全边界**：只快进本地已有仓库，不删除未提交改动、不访问远端写接口、不推送内容；非快进失败自动保留现状。手动只读检查可运行 `bash scripts/check-updates.sh`；环境就绪/缺项可运行 `bash scripts/doctor.sh`。
+- **安全边界**：只快进本地已有仓库，不删除未提交改动、不访问远端写接口、不推送内容；非快进失败自动保留现状。手动只读检查可运行 `bash scripts/check-updates.sh`；环境就绪/缺项/完整性可运行 `bash scripts/doctor.sh [--online]`。
+
+## 5. 运维指令（管理类，不参与生产路由触发）
+
+以下命令属于安装、自检、更新等管理动作，与上面的生产路由分开，不在生产触发词里混用：
+
+- 安装到当前宿主：在仓库根目录运行 `bash scripts/install.sh`（`--dir <目录>` 指定目标；`--install-deps` 同时装外部 git/npx 依赖；`--list-hosts` 列出候选目录）。
+- 自检：`bash scripts/doctor.sh`（加 `--online` 额外检查上游网络可达性）。
+- 手动检查更新：`bash scripts/check-updates.sh`。
+- 查看/注销后台注册：`bash scripts/env-registry.sh --status` / `--unregister`。
+- 云端 Agent 没有本机调度器时，env-registry 会降级提示：在定时任务中心建一条每周日 18:00 的任务，命令为 `bash <zyx目录>/scripts/updater.sh --silent`。

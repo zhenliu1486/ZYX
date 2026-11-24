@@ -164,8 +164,8 @@ case "$scheduler" in
   launchd) register_launchd ;;
   systemd) register_systemd ;;
   none)
-    log "未检测到可用调度器（cron/launchd/systemd 均不可用）。"
-    log "降级方案：在当前 Agent 对话框的定时任务中心，手动注册一条每周日 $WEEKLY_HOUR:00 的任务，命令：bash $UPDATER --silent"
+    log "未检测到可用本机调度器（cron/launchd/systemd 均不可用）。"
+    log "本注册器只能写本机调度配置，管不到云端 Agent 的定时任务中心。降级方案：在当前 Agent 的定时任务中心手动建一条每周日 $WEEKLY_HOUR:00 的任务，命令：bash $UPDATER --silent"
     exit 0
     ;;
 esac

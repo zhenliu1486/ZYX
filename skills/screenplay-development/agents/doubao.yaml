@@ -1,0 +1,7 @@
+interface:
+  display_name: "电影剧本开发"
+  short_description: "三幕结构与人物弧光方法论"
+  default_prompt: "使用 $screenplay-development 帮我完成……"
+
+policy:
+  allow_implicit_invocation: true

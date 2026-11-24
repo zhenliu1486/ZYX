@@ -3,8 +3,8 @@
 # 由 env-registry 注册的周检任务调用；也可手动执行。
 #
 # 职责：
-# 1. 检查并快进更新三个 git 蒸馏器（女娲/大师/仓颉），失败自动回滚。
-# 2. 检查 zyx 自身版本（若 zyx 后续发布到远端仓库，比对远端版本号/commit）。
+# 1. 检查并快进更新清单内的 git 蒸馏器（女娲/大师/仓颉/达尔文可选），失败自动回滚。
+# 2. 检查 zyx 自身版本（版本号 + 远端 HEAD SHA；自身快进更新仍预留，不自动覆盖运行中的 Skill）。
 # 3. dbs 家族：只比对官方版本并记录差异，不自动批量覆盖（目录式安装，由 dbs-update 处理）。
 # 4. 全程写日志到 state/updater.log；--silent 时不在前台打印。
 #
@@ -12,6 +12,10 @@
 # - git 仓库只做 --ff-only 快进；非快进（本地有分叉/手改）不强行合并，保留本地并记录。
 # - 快进前备份当前 HEAD 到 state/backup/；更新后若产物脚本/关键文件缺失，可据此回滚。
 # - 不删除用户本地未提交改动；不访问远端写接口；不推送任何内容。
+#
+# 可配置环境变量：
+#   ZYX_FAIL_THRESHOLD  drift 报告连续失败阈值（默认 3）
+#   ZYX_REPO / ZYX_BRANCH  覆盖自身远端仓库与分支
 
 set -uo pipefail
 
@@ -21,12 +25,15 @@ STATE_DIR="$ZYX_DIR/state"
 BACKUP_DIR="$STATE_DIR/backup"
 LOG_FILE="$STATE_DIR/updater.log"
 SELF_VER_FILE="$STATE_DIR/self-version.json"
+# shellcheck source=lib-common.sh
+source "$SCRIPT_DIR/lib-common.sh"
 mkdir -p "$STATE_DIR" "$BACKUP_DIR"
 
 # zyx 自身远端仓库（可用环境变量 ZYX_REPO / ZYX_BRANCH 覆盖）
 DEFAULT_ZYX_REPO="https://github.com/zhenliu1486/ZYX"
 ZYX_REPO="${ZYX_REPO:-$DEFAULT_ZYX_REPO}"
 ZYX_BRANCH="${ZYX_BRANCH:-main}"
+FAIL_THRESHOLD="${ZYX_FAIL_THRESHOLD:-3}"
 
 SILENT=0
 CHECK_DRIFT=0
@@ -42,23 +49,6 @@ log() {
   echo "$line" >> "$LOG_FILE"
   [ "$SILENT" -eq 0 ] && echo "$line"
 }
-
-# 宿主探测目录：内置清单 + 环境变量 ZYX_EXTRA_SKILL_DIRS 追加（冒号分隔）
-HOST_DIRS=(
-  "$HOME/.claude/skills"
-  "$HOME/.openclaw/skills"
-  "$HOME/.agents/skills"
-  "$HOME/.doubao/agent_mode/workspace/.user_skills"
-  "$HOME/.gemini/skills"
-  "$HOME/.kiro/skills"
-  "$HOME/.qwen/skills"
-  "$HOME/.grok/skills"
-  "$HOME/.hermes/skills"
-)
-if [ -n "${ZYX_EXTRA_SKILL_DIRS:-}" ]; then
-  IFS=':' read -ra _extra <<< "$ZYX_EXTRA_SKILL_DIRS"
-  HOST_DIRS+=("${_extra[@]}")
-fi
 
 # 失败计数状态文件（JSON，python 读写保证格式合法）
 FAIL_STATE="$STATE_DIR/fail-count.json"
@@ -90,31 +80,16 @@ json.dump(d, open(f,"w"), ensure_ascii=False, indent=2)
 PY
 }
 
-# 代号|目录名|上游仓库|分支
-REPOS=(
-  "R1女娲|nuwa-skill|https://github.com/alchaincyf/nuwa-skill|main"
-  "R2大师|master-skill|https://github.com/swaylq/master-skill|main"
-  "R3仓颉|cangjie-skill|https://github.com/kangarooking/cangjie-skill|main"
-)
-
-find_local() { # $1=目录名 → 打印第一个含 .git 的本地路径
-  local dir="$1" base
-  for base in "${HOST_DIRS[@]}"; do
-    if [ -d "$base/$dir/.git" ]; then echo "$base/$dir"; return 0; fi
-  done
-  return 1
-}
-
 backup_head() { # $1=路径 $2=目录名
   local path="$1" name="$2" head
   head="$(git -C "$path" rev-parse HEAD 2>/dev/null || echo unknown)"
   echo "$head" > "$BACKUP_DIR/$name.head"
 }
 
-update_git_repo() { # $1=label $2=dir $3=repo $4=branch
-  local label="$1" dir="$2" repo="$3" branch="$4"
+update_git_repo() { # $1=label $2=dir $3=repo
+  local label="$1" dir="$2" repo="$3"
   local local_path
-  local_path="$(find_local "$dir" || true)"
+  local_path="$(find_local_git "$dir" || true)"
 
   if [ -z "$local_path" ]; then
     log "$label ($dir) 本地未安装，跳过。"
@@ -125,7 +100,7 @@ update_git_repo() { # $1=label $2=dir $3=repo $4=branch
     git -C "$local_path" remote add origin "$repo" 2>/dev/null || true
   fi
 
-  if ! git -C "$local_path" fetch --depth 1 origin "$branch" >>"$LOG_FILE" 2>&1; then
+  if ! git -C "$local_path" fetch --depth 1 origin "$ZYX_BRANCH" >>"$LOG_FILE" 2>&1; then
     record_failure "$dir" "远端不可达/fetch 失败"
     log "$label ($dir) 远端不可达，跳过。"
     return 0
@@ -134,7 +109,7 @@ update_git_repo() { # $1=label $2=dir $3=repo $4=branch
 
   local before after
   before="$(git -C "$local_path" rev-parse HEAD 2>/dev/null || echo unknown)"
-  after="$(git -C "$local_path" rev-parse "origin/$branch" 2>/dev/null || echo unknown)"
+  after="$(git -C "$local_path" rev-parse "origin/$ZYX_BRANCH" 2>/dev/null || echo unknown)"
 
   if [ "$before" = "$after" ]; then
     log "$label ($dir) 已是最新。"
@@ -149,15 +124,14 @@ update_git_repo() { # $1=label $2=dir $3=repo $4=branch
 
   backup_head "$local_path" "$dir"
 
-  if git -C "$local_path" pull --ff-only origin "$branch" >>"$LOG_FILE" 2>&1; then
+  if git -C "$local_path" pull --ff-only origin "$ZYX_BRANCH" >>"$LOG_FILE" 2>&1; then
     log "$label ($dir) 已快进更新：${before:0:7} → ${after:0:7}。"
     return 0
   fi
 
   # 兜底：浅克隆历史不全导致非快进、且本地无手改时，允许硬重置到远端（已备份 HEAD）。
-  # 有未提交改动已在前面拦截；走到这里说明工作区干净，仅历史浅/分叉。
   if [ -z "$(git -C "$local_path" status --porcelain 2>/dev/null)" ]; then
-    if git -C "$local_path" reset --hard "origin/$branch" >>"$LOG_FILE" 2>&1; then
+    if git -C "$local_path" reset --hard "origin/$ZYX_BRANCH" >>"$LOG_FILE" 2>&1; then
       log "$label ($dir) 浅克隆/历史不全，已按远端重置：${before:0:7} → ${after:0:7}（旧 HEAD 备份于 $BACKUP_DIR/$dir.head）。"
       return 0
     fi
@@ -166,7 +140,7 @@ update_git_repo() { # $1=label $2=dir $3=repo $4=branch
   log "$label ($dir) 更新失败，保留本地版本（备份 HEAD: $(cat "$BACKUP_DIR/$dir.head" 2>/dev/null)）。"
 }
 
-# ---- zyx 自身版本检查（远端版本号比对；自身快进更新仍预留，不自动覆盖运行中的 Skill）----
+# ---- zyx 自身版本检查（版本号 + 远端 HEAD SHA；自身快进更新仍预留，不自动覆盖运行中的 Skill）----
 _zyx_remote_version() {
   local owner_repo="${ZYX_REPO#https://github.com/}" branch url body
   for branch in "$ZYX_BRANCH" master; do
@@ -177,6 +151,14 @@ _zyx_remote_version() {
     }
   done
   return 1
+}
+
+_zyx_remote_sha() {
+  local sha
+  sha="$(git ls-remote "$ZYX_REPO" "$ZYX_BRANCH" 2>/dev/null | awk '{print $1}')"
+  [ -n "$sha" ] && { echo "$sha"; return 0; }
+  sha="$(git ls-remote "$ZYX_REPO" master 2>/dev/null | awk '{print $1}')"
+  echo "$sha"
 }
 
 _ver_compare() { # $1=local $2=remote -> equal|behind|ahead|unknown
@@ -193,9 +175,11 @@ PY
 }
 
 check_zyx_self() {
-  local current remote cmp
+  local current remote cmp local_sha remote_sha
   current="$(grep -m1 'version:' "$ZYX_DIR/SKILL.md" | sed -E 's/.*version: *"?([^" ]+)"?.*/\1/')"
   remote="$(_zyx_remote_version || true)"
+  local_sha="$(git -C "$ZYX_DIR" rev-parse HEAD 2>/dev/null || echo unknown)"
+  remote_sha="$(_zyx_remote_sha || true)"
 
   if [ -z "$remote" ]; then
     record_failure "zyx-self" "远端版本不可达"
@@ -217,10 +201,12 @@ check_zyx_self() {
   esac
 
   # 落盘自身版本比对结果，供 drift 报告与 doctor 读取
-  ZYX_SELF_VER_FILE="$SELF_VER_FILE" python3 - "$current" "$remote" "$cmp" <<'PY'
+  ZYX_SELF_VER_FILE="$SELF_VER_FILE" python3 - "$current" "$remote" "$cmp" "$local_sha" "$remote_sha" <<'PY'
 import json, os, sys, time
 f=os.environ["ZYX_SELF_VER_FILE"]
-data={"local":sys.argv[1],"remote":sys.argv[2],"status":sys.argv[3],"checked_at":time.strftime("%Y-%m-%d %H:%M:%S")}
+data={"local":sys.argv[1],"remote":sys.argv[2],"status":sys.argv[3],
+      "local_sha":sys.argv[4],"remote_sha":sys.argv[5],
+      "checked_at":time.strftime("%Y-%m-%d %H:%M:%S")}
 json.dump(data, open(f,"w"), ensure_ascii=False, indent=2)
 PY
 }
@@ -234,10 +220,11 @@ check_dbs() {
 
 log "===== zyx 静默更新开始 ====="
 check_zyx_self
-for entry in "${REPOS[@]}"; do
-  IFS='|' read -r label dir repo branch <<< "$entry"
-  update_git_repo "$label" "$dir" "$repo" "$branch"
-done
+# git 依赖清单来自 manifest（source=git）
+while IFS=$'\t' read -r id dir url; do
+  [ -z "$dir" ] && continue
+  update_git_repo "$id" "$dir" "$url"
+done < <(python3 "$SCRIPT_DIR/deps.py" git-repos)
 check_dbs
 
 # drift 报告：汇总失败计数、连续失败项与 zyx 自身版本状态
@@ -254,15 +241,17 @@ if d:
 else:
     print("  无失败记录。")
 PY
-  # 连续失败 ≥ 3 次的项，提示下次对话需人工检查
-  threshold=3
-  FAIL_STATE="$FAIL_STATE" THRESHOLD="$threshold" python3 <<'PY'
+  echo "## 连续失败 ≥ $FAIL_THRESHOLD 次的项"
+  FAIL_STATE="$FAIL_STATE" THRESHOLD="$FAIL_THRESHOLD" python3 <<'PY'
 import json, os
 f=os.environ["FAIL_STATE"]; t=int(os.environ["THRESHOLD"])
 try: d=json.load(open(f)) if os.path.exists(f) else {}
 except Exception: d={}
+hit=False
 for k,v in sorted(d.items()):
-    if int(v)>=t: print(f"  ⚠ {k} 连续失败 {v} 次，下次对话请人工检查网络/安装状态。")
+    if int(v)>=t:
+        print(f"  ⚠ {k} 连续失败 {v} 次，下次对话请人工检查网络/安装状态。"); hit=True
+if not hit: print("  无。")
 PY
   echo "## zyx 自身版本"
   SELF="$SELF_VER_FILE" python3 <<'PY'
@@ -271,7 +260,9 @@ f=os.environ["SELF"]
 try:
     d=json.load(open(f))
     msg={"equal":"已是最新","behind":"⚠ 本地落后远端，建议更新","ahead":"本地超前远端（未发布）","unknown":"版本号无法比对"}
-    print(f"  本地 {d['local']} / 远端 {d['remote']} — {msg.get(d['status'], d['status'])}（{d['checked_at']}）")
+    extra=""
+    if d.get("remote_sha"): extra=f"（远端 {d['remote_sha'][:7]}）"
+    print(f"  本地 {d['local']} / 远端 {d['remote']} — {msg.get(d['status'], d['status'])}{extra}（{d['checked_at']}）")
 except Exception:
     print("  未生成自身版本比对结果。")
 PY

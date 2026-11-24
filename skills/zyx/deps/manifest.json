@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "zyx_version": "1.1.0",
+  "description": "ZYX 路由调度台的依赖声明清单。doctor / updater / install 脚本统一从本文件读取，不在脚本里硬编码依赖清单。",
+  "host_dirs": [
+    "$HOME/.claude/skills",
+    "$HOME/.openclaw/skills",
+    "$HOME/.agents/skills",
+    "$HOME/.doubao/agent_mode/workspace/.user_skills",
+    "$HOME/.gemini/skills",
+    "$HOME/.kiro/skills",
+    "$HOME/.qwen/skills",
+    "$HOME/.grok/skills",
+    "$HOME/.hermes/skills"
+  ],
+  "dependencies": [
+    {
+      "id": "R1",
+      "route": "人（思维方式 / 名人 OS）",
+      "dir": "nuwa-skill",
+      "source": "git",
+      "required": true,
+      "parent": null,
+      "url": "https://github.com/alchaincyf/nuwa-skill",
+      "install": "git clone https://github.com/alchaincyf/nuwa-skill",
+      "notes": "人物视角蒸馏器；R2 大师 Phase3 会内部委派给它。"
+    },
+    {
+      "id": "R2",
+      "route": "细分行业",
+      "dir": "master-skill",
+      "source": "git",
+      "required": true,
+      "parent": null,
+      "url": "https://github.com/swaylq/master-skill",
+      "install": "git clone https://github.com/swaylq/master-skill",
+      "notes": "行业 Master OS 蒸馏器。"
+    },
+    {
+      "id": "R3",
+      "route": "长内容（书/视频/播客/课程/访谈）",
+      "dir": "cangjie-skill",
+      "source": "git",
+      "required": true,
+      "parent": null,
+      "url": "https://github.com/kangarooking/cangjie-skill",
+      "install": "git clone https://github.com/kangarooking/cangjie-skill",
+      "notes": "长内容方法论蒸馏器；本体另需 Python 3.10+ 与 PyYAML。"
+    },
+    {
+      "id": "R4",
+      "route": "当下问题（诊断/文案/决策/协作）",
+      "dir": "dbs",
+      "source": "npx",
+      "required": true,
+      "parent": null,
+      "url": "https://github.com/dontbesilent2025/dbskill",
+      "install": "npx -y skills add dontbesilent2025/dbskill -g --all",
+      "notes": "dbs 主调度台及子技能；目录式安装，更新器只比对版本不自动覆盖。"
+    },
+    {
+      "id": "R5",
+      "route": "影视/短剧/漫剧制作（聚合层）",
+      "dir": "video-studio",
+      "source": "bundled",
+      "required": false,
+      "parent": null,
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "R5 聚合入口，内部路由到下列子技能。"
+    },
+    {
+      "id": "R5-script",
+      "route": "R5 故事/剧本开发",
+      "dir": "screenplay-development",
+      "source": "bundled",
+      "required": false,
+      "parent": "video-studio",
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "三幕结构/英雄之旅/救猫咪节拍表/人物弧光。"
+    },
+    {
+      "id": "R5-drama",
+      "route": "R5 竖屏短剧编剧",
+      "dir": "short-drama-screenwriter",
+      "source": "bundled",
+      "required": false,
+      "parent": "video-studio",
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "女频/男频套路、开头钩子、反转节奏、集尾悬念。"
+    },
+    {
+      "id": "R5-char",
+      "route": "R5 人物设定",
+      "dir": "manju-character-library",
+      "source": "bundled",
+      "required": false,
+      "parent": "video-studio",
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "角色外貌/服装配饰/群像/批量人物提示词/角色一致性。"
+    },
+    {
+      "id": "R5-scene",
+      "route": "R5 场景设定",
+      "dir": "manju-scene-library",
+      "source": "bundled",
+      "required": false,
+      "parent": "video-studio",
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "背景/环境/分镜场景图/时间天气氛围场景。"
+    },
+    {
+      "id": "R5-fight",
+      "route": "R5 动作/打斗戏",
+      "dir": "cinematic-fight-direction",
+      "source": "bundled",
+      "required": false,
+      "parent": "video-studio",
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "武侠/格斗/枪战/追逐分镜镜头与 AI 提示词。"
+    },
+    {
+      "id": "R5-emotion",
+      "route": "R5 微表情/表情视频",
+      "dir": "micro-expression-video",
+      "source": "bundled",
+      "required": false,
+      "parent": "video-studio",
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "真实自然面部表情视频/情绪变化/眼神嘴角呼吸眨眼参数。"
+    },
+    {
+      "id": "R5-pipeline",
+      "route": "R5 全流程生产 SOP",
+      "dir": "manju-production-pipeline",
+      "source": "bundled",
+      "required": false,
+      "parent": "video-studio",
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "剧本拆分/分镜表/提示词批量生成/生成/配音配乐/剪辑合成。"
+    },
+    {
+      "id": "R6",
+      "route": "已有产物二次迭代",
+      "dir": "f2r-feedback-iteration",
+      "source": "bundled",
+      "required": false,
+      "parent": null,
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "负反馈显性化为规则、小样本迭代 + 回归测试。"
+    },
+    {
+      "id": "DARWIN",
+      "route": "Darwin 式压测底座（可选）",
+      "dir": "darwin-skill",
+      "source": "git",
+      "required": false,
+      "parent": null,
+      "url": "https://github.com/alchaincyf/darwin-skill",
+      "install": "git clone https://github.com/alchaincyf/darwin-skill",
+      "notes": "压测行为验证本体；shared/darwin 只引用其口径，不内嵌本体。"
+    }
+  ]
+}

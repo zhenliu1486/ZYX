@@ -8,3 +8,5 @@ __pycache__/
 Thumbs.db
 *.tmp
 .tmp-tool-results/
+# f2r 运行期迭代目录
+cycles/

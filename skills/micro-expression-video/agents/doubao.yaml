@@ -1,0 +1,7 @@
+interface:
+  display_name: "微表情视频生成"
+  short_description: "真人感微表情与情绪控制"
+  default_prompt: "使用 $micro-expression-video 帮我完成……"
+
+policy:
+  allow_implicit_invocation: true

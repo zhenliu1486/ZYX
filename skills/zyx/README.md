@@ -1,35 +1,85 @@
 # zyx · 总调度台
 
-> 一个薄壳路由入口 Skill：判断原料是「人 / 行业 / 长内容 / 当下问题 / 内容生产 / 产物迭代」，转发给对应的独立蒸馏器、dbs 家族或聚合层，统一收口产物。三个蒸馏器保持独立、各自追上游 git 更新；公共校验、质检、可信度、产物规范与 Darwin 式压测抽成 `shared/` 共享底座。
+> 一个薄壳路由入口 Skill：判断原料是「人 / 行业 / 长内容 / 当下问题 / 内容生产 / 产物迭代」，转发给对应的独立蒸馏器、dbs 家族或聚合层，统一收口产物。上游蒸馏器保持独立、各自追上游 git 更新；公共校验、质检、可信度、产物规范与 Darwin 式压测抽成 `shared/` 共享底座。
 
-## 三层结构
+## 仓库布局
 
 ```
-zyx/
-├── SKILL.md                  # 第 1 层：入口路由（薄壳，不含方法论）
-├── references/               # 路由判定表、产物目录与回传规范
-├── scripts/                  # route.sh 路由解析；env-registry.sh 自注册；updater.sh 静默更新；
-│                             #   doctor.sh 自检；desktop-dir.sh 桌面探测；artifact-dir.sh 规范产物目录
-├── shared/                   # 第 3 层：共享底座（三方重复部分抽公共）
-│   ├── verification/         #   增量认知校验 + 三重交叉验证
-│   ├── quality/              #   质检与审计清单（含发布前脱敏必过项）
-│   ├── credibility/          #   来源可信度分级
-│   ├── artifacts/            #   产物目录规范与 MANIFEST 模板
-│   └── darwin/               #   Darwin 式压测用例口径（兼容达尔文 skill）
-├── evals/                    # 路由回归用例（人/行业/内容/问题/生产/迭代各一条）
-└── assets/
+ZYX/
+├── scripts/install.sh              # 一键安装器（识别宿主 → 复制内置 Skill → 自检）
+└── skills/
+    ├── zyx/                        # 第 1 层：入口路由薄壳（本目录）
+    │   ├── deps/manifest.json     #   依赖声明清单：来源/安装命令/必需可选/子技能归属
+    │   ├── references/            #   路由判定表、产物目录与回传规范
+    │   ├── scripts/               #   路由解析 / 自注册 / 静默更新 / 自检 / 目录探测
+    │   ├── shared/                #   第 3 层：共享底座（三方重复部分抽公共）
+    │   └── evals/                 #   路由与降级/版本/脱敏回归用例
+    ├── video-studio/              # 第 2 层：影视制作聚合入口
+    ├── screenplay-development/    # R5 剧本开发（内置）
+    ├── short-drama-screenwriter/  # R5 竖屏短剧编剧（内置）
+    ├── manju-character-library/   # R5 人物设定库（内置）
+    ├── manju-scene-library/        # R5 场景库（内置）
+    ├── cinematic-fight-direction/ # R5 动作/打斗分镜（内置）
+    ├── micro-expression-video/    # R5 微表情参数（内置）
+    ├── manju-production-pipeline/  # R5 全流程 SOP（内置）
+    └── f2r-feedback-iteration/    # R6 负反馈迭代器（内置）
 ```
 
 ## 路由表
 
-| 原料类型 | 转发到 | 上游仓库 / 来源 | 产物 |
+| 原料类型 | 转发到 | 来源类型 | 产物 |
 |---|---|---|---|
-| 人（思维方式 / 名人 OS） | R1 女娲 `nuwa-skill` | alchaincyf/nuwa-skill | 人物视角 Skill |
-| 细分行业 | R2 大师 `master-skill` | swaylq/master-skill | 行业 Master Skill（Phase 3 调女娲出人物 sub-skill） |
-| 长内容（书/视频/播客/课程/访谈） | R3 仓颉 `cangjie-skill` | kangarooking/cangjie-skill | 原子能力卡 + Skill 包 |
-| 当下问题（诊断/文案/决策/协作） | R4 dbs 家族 | dontbesilent2025/dbskill | 报告 / 成稿 / 决策记录 |
-| 影视/短剧/漫剧制作 | R5 `video-studio` 聚合层 | 本地聚合，内部路由子技能 | 剧本 / 设定 / 分镜 / 参数 / 流程方案 |
-| 已有产物二次打磨 | R6 `f2r-feedback-iteration` | 本地打磨类子技能 | 迭代后的产物 + 反馈规则记录 |
+| 人（思维方式 / 名人 OS） | R1 女娲 `nuwa-skill` | git（必需，外部上游） | 人物视角 Skill |
+| 细分行业 | R2 大师 `master-skill` | git（必需，外部上游） | 行业 Master Skill（Phase 3 调女娲出人物 sub-skill） |
+| 长内容（书/视频/播客/课程/访谈） | R3 仓颉 `cangjie-skill` | git（必需，外部上游） | 原子能力卡 + Skill 包 |
+| 当下问题（诊断/文案/决策/协作） | R4 dbs 家族 | npx（必需，外部上游） | 报告 / 成稿 / 决策记录 |
+| 影视/短剧/漫剧制作 | R5 `video-studio` 聚合层 | 内置，7 个子技能随仓库 | 剧本 / 设定 / 分镜 / 参数 / 流程方案 |
+| 已有产物二次打磨 | R6 `f2r-feedback-iteration` | 内置 | 迭代后的产物 + 反馈规则记录 |
+| Darwin 式压测底座（可选） | `darwin-skill` | git（可选，外部上游） | 压测行为验证本体 |
+
+> 依赖的完整字段（安装命令、归属、备注）以 `skills/zyx/deps/manifest.json` 为准；新增/调整依赖只改这一份清单。
+
+## 安装
+
+### 方式一：一键安装器（推荐）
+
+在仓库根目录执行：
+
+```bash
+# 自动选择第一个可写的宿主 skills 目录，复制全部内置 Skill 并跑自检
+bash scripts/install.sh
+
+# 指定目标 skills 目录
+bash scripts/install.sh --dir ~/.claude/skills
+
+# 同时安装外部 git/npx 上游依赖（女娲/大师/仓颉/dbs/达尔文）
+bash scripts/install.sh --install-deps
+
+# 只列出候选宿主目录
+bash scripts/install.sh --list-hosts
+```
+
+### 方式二：手工复制
+
+把 `skills/` 下需要的 Skill 目录复制到任一宿主的 skills 目录：
+
+```bash
+# Claude Code
+cp -r skills/zyx skills/video-studio ~/.claude/skills/
+# OpenClaw
+cp -r skills/zyx skills/video-studio ~/.openclaw/skills/
+# Agents
+cp -r skills/zyx skills/video-studio ~/.agents/skills/
+# 豆包 Doubao 用户技能目录
+cp -r skills/zyx skills/video-studio ~/.doubao/agent_mode/workspace/.user_skills/
+```
+
+内置的 R5 子技能与 R6 迭代器随 `skills/` 一起复制即可；外部上游蒸馏器按上表来源单独安装。
+
+### 运行环境
+
+- 脚本运行需要 Bash、git、curl；仓颉本体另需 Python 3.10+ 与 PyYAML。
+- 宿主目录探测顺序见 `deps/manifest.json` 的 `host_dirs`；可用 `ZYX_EXTRA_SKILL_DIRS`（冒号分隔）追加额外探测目录。
 
 ## 日常调用示例
 
@@ -60,6 +110,19 @@ zyx/
 
 入口判定：原料是「内容生产」→ 路由 R5 video-studio 聚合层，内部依次路由短剧编剧、人物/场景库、动作分镜子技能；产物落到 `zyx-output/video/`。
 
+## 自检与更新
+
+- **自检**：`bash skills/zyx/scripts/doctor.sh`（加 `--online` 额外检查上游网络可达性）。检查运行依赖、依赖安装状态、文件完整性与悬空引用、调度环境、产物目录可写性、自身版本。
+- **首次触发自注册**：`scripts/env-registry.sh` 探测 cron / launchd / systemd 并幂等注册后台周检；`--status` 查看状态，`--unregister` 卸载。纯云端无调度器环境会降级提示在定时任务中心建任务。
+- **静默更新**：`scripts/updater.sh` 对清单内 git 依赖做 ff-only 快进 + 浅克隆兜底重置（旧 HEAD 备份），dbs 只比对不覆盖；失败计数、连续失败提示与 drift 报告（`--check-drift`）。zyx 自身拉取远端版本号与 HEAD SHA 同本地比对，落后/超前/最新写入 `state/self-version.json`；自身快进覆盖仍需人工确认，不自动执行。
+- **环境变量**：`ZYX_REPO` 覆盖自身远端仓库，`ZYX_BRANCH` 覆盖远端分支（默认 `main`），`ZYX_FAIL_THRESHOLD` 覆盖连续失败阈值（默认 3），`ZYX_EXTRA_SKILL_DIRS` 追加额外 Skill 探测目录。
+
+## 发布与认证（开发者）
+
+- 发布到远端仓库用 `scripts/publish.sh`（默认 public，可传 `private` 与 tag）；建仓 / push / tag / Release 属远端写动作，需当轮明确授权。
+- 换机器或首次推送需重新完成 GitHub 登录（`gh auth login` 或 `gh auth login --with-token <token>`）；旧版 gh 凭证助手不吐账号时，用带 `repo` 权限的 PAT 走 token 方式。
+- 发布前按 `shared/quality/qa-audit.md` 脱敏：不提交密钥、内部路径、本机配置、未脱敏样本与运行记录。
+
 ## 设计原则
 
 - **入口只做路由与收口**：zyx 不调研、不提炼方法论、不复制蒸馏器内部文件。
@@ -67,31 +130,9 @@ zyx/
 - **共享底座去重**：增量校验、三重验证、质检审计、可信度标注、产物规范、压测用例只维护一份，三方引用。
 - **产物按来源名分目录**：产物落到桌面 `zyx-output/<来源 Skill>/<产物>/`，由 zyx 统一回传路径清单；桌面目录按「桌面 → 文档 → HOME/zyx-output」跨平台回退探测。
 
-## 自检与更新
-
-- **首次触发自注册**：`scripts/env-registry.sh` 探测 cron / launchd / systemd 并幂等注册后台周检；`--status` 查看状态，`--unregister` 卸载。
-- **静默更新**：`scripts/updater.sh` 对 R1/R2/R3 做 ff-only 快进 + 浅克隆兜底重置（旧 HEAD 备份），dbs 只比对不覆盖；失败计数、连续失败提示与 drift 报告（`--check-drift`）。zyx 自身会拉取远端版本号与本地比对，落后/超前/最新写入 `state/self-version.json` 并在 drift 报告里提示；自身快进覆盖仍需人工确认，不自动执行。
-- **自检**：`bash scripts/doctor.sh` 输出就绪状态、缺什么、怎么补，含自身版本比对结果。
-- **定时周检**：每周日 18:00 触发上游更新检查；纯云端无调度器环境会降级提示。
-- **环境变量**：`ZYX_REPO` 覆盖自身远端仓库地址，`ZYX_BRANCH` 覆盖远端分支（默认 `main`），`ZYX_EXTRA_SKILL_DIRS` 冒号分隔追加额外 Skill 探测目录。
-
 ## 规范对齐
 
 本 Skill 遵循开放 Agent Skills 规范（agentskills.io）：YAML frontmatter（`name` / `description` / `license` / `compatibility` / `metadata` / `allowed-tools`）、渐进式披露（元数据 → 正文 → 按需加载 references/scripts/assets）、正文 500 行以内。模板与标准参考 Anthropic agentskills 开放规范与 Google 官方 skills 仓库格式。
-
-## 安装
-
-把 `zyx/` 目录放到任一宿主的 skill 目录即可，例如：
-
-```bash
-# Claude Code
-cp -r zyx ~/.claude/skills/zyx
-# OpenClaw
-cp -r zyx ~/.openclaw/skills/zyx
-# 或其他兼容宿主的 skills 目录
-```
-
-依赖：被转发的蒸馏器需与本 Skill 同机安装；脚本用 Bash 与 git；仓颉本体另需 Python 3.10+ 与 PyYAML。
 
 ## 许可
 

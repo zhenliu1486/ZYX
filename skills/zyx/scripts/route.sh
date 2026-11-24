@@ -5,34 +5,18 @@
 
 set -euo pipefail
 
-TARGET="${1:-}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib-common.sh
+source "$SCRIPT_DIR/lib-common.sh"
 
-# 宿主 skill 探测目录（顺序即优先级）
-HOST_DIRS=(
-  "$HOME/.claude/skills"
-  "$HOME/.openclaw/skills"
-  "$HOME/.agents/skills"
-  "$HOME/.doubao/agent_mode/workspace/.user_skills"
-  "$HOME/.gemini/skills"
-  "$HOME/.kiro/skills"
-  "$HOME/.qwen/skills"
-  "$HOME/.grok/skills"
-  "$HOME/.hermes/skills"
-)
-if [ -n "${ZYX_EXTRA_SKILL_DIRS:-}" ]; then
-  IFS=':' read -ra _extra <<< "$ZYX_EXTRA_SKILL_DIRS"
-  HOST_DIRS+=("${_extra[@]}")
-fi
+TARGET="${1:-}"
 
 resolve() { # $1=目录名  $2=环境变量名
   local dir="$1" envvar="$2"
   if [ -n "${!envvar:-}" ] && [ -f "${!envvar}/SKILL.md" ]; then
     echo "${!envvar}"; return 0
   fi
-  for base in "${HOST_DIRS[@]}"; do
-    if [ -f "$base/$dir/SKILL.md" ]; then echo "$base/$dir"; return 0; fi
-  done
-  return 1
+  find_local "$dir"
 }
 
 case "$TARGET" in

@@ -1,0 +1,7 @@
+interface:
+  display_name: "漫剧人物资产库"
+  short_description: "1000+人物设定与提示词模板"
+  default_prompt: "使用 $manju-character-library 帮我完成……"
+
+policy:
+  allow_implicit_invocation: true

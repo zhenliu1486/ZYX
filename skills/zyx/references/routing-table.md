@@ -31,21 +31,25 @@
 对每个蒸馏器，按以下顺序解析本机绝对路径，找到第一个存在 `SKILL.md` 的目录：
 
 1. 环境变量（若设置）：`$NUWA_SKILL_DIR`、`$MASTER_SKILL_DIR`、`$CANGJIE_SKILL_DIR`、`$DBS_SKILL_DIR`。
-2. 本机宿主 skill 目录依次探测：
+2. zyx 所在的同级 skills 目录（安装器把内置兄弟技能复制在 zyx 旁边）。
+3. 本机宿主 skill 目录依次探测：
    - `~/.claude/skills/<repo>`
    - `~/.openclaw/skills/<repo>`
    - `~/.agents/skills/<repo>`
    - Doubao 用户技能目录 `~/.doubao/agent_mode/workspace/.user_skills/<repo>`
-3. 都不存在：报错说明「未检测到 <repo>，请先安装」，并给出上游仓库地址；不要凭空假设路径。
+4. 都不存在：报错说明「未检测到 <repo>，请先安装」，并给出上游仓库地址；不要凭空假设路径。
+
+> 下表是摘要；依赖的来源类型、安装命令、必需/可选与子技能归属，权威清单在 `../deps/manifest.json`。
 
 | 代号 | 目录名 | 上游仓库 / 来源 |
 |---|---|---|
-| R1 | `nuwa-skill` | https://github.com/alchaincyf/nuwa-skill |
-| R2 | `master-skill` | https://github.com/swaylq/master-skill |
-| R3 | `cangjie-skill` | https://github.com/kangarooking/cangjie-skill |
-| R4 | `dbs-*`（主目录 `dbs`） | https://github.com/dontbesilent2025/dbskill |
-| R5 | `video-studio`（聚合层） | 本地聚合，子技能见 video-studio/SKILL.md |
-| R6 | `f2r-feedback-iteration` | 本地打磨类子技能 |
+| R1 | `nuwa-skill` | https://github.com/alchaincyf/nuwa-skill（git，必需） |
+| R2 | `master-skill` | https://github.com/swaylq/master-skill（git，必需） |
+| R3 | `cangjie-skill` | https://github.com/kangarooking/cangjie-skill（git，必需） |
+| R4 | `dbs-*`（主目录 `dbs`） | https://github.com/dontbesilent2025/dbskill（npx，必需） |
+| R5 | `video-studio`（聚合层） | 随仓库内置；7 个子技能随仓库内置，见 video-studio/SKILL.md |
+| R6 | `f2r-feedback-iteration` | 随仓库内置 |
+| 可选 | `darwin-skill` | https://github.com/alchaincyf/darwin-skill（git，可选压测底座） |
 
 ## 4. 发布与远端动作边界
 

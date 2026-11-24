@@ -35,7 +35,7 @@ allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
 
 ## 3. 子技能路径解析
 
-解析顺序：环境变量覆盖 → 本机宿主目录探测（`~/.claude/skills`、`~/.openclaw/skills`、`~/.agents/skills`、`~/.doubao/agent_mode/workspace/.user_skills`）→ 报错提示安装。禁止把各子技能方法论复制进本聚合目录。
+解析顺序：环境变量覆盖 → 本聚合层同级 skills 目录（安装器把内置子技能复制在旁边）→ 本机宿主目录探测（`~/.claude/skills`、`~/.openclaw/skills`、`~/.agents/skills`、`~/.doubao/agent_mode/workspace/.user_skills`）→ 报错提示安装。禁止把各子技能方法论复制进本聚合目录。上述 7 个子技能随 ZYX 仓库内置，安装器自动复制；依赖归属以 `../zyx/deps/manifest.json` 为准。
 
 ## 4. 边界
 

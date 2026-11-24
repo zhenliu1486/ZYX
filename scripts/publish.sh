@@ -9,7 +9,7 @@ set -euo pipefail
 
 REPO_NAME="ZYX"
 VISIBILITY="${1:-public}"
-TAG="${2:-v1.0.2}"
+TAG="${2:-v1.1.0}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
@@ -38,7 +38,7 @@ git add -A
 if git diff --cached --quiet; then
   echo "ℹ 无待提交改动。"
 else
-  git commit -m "chore: release $TAG — zyx 调度台 v1.0.1 + video-studio 聚合层"
+  git commit -m "chore: release $TAG — zyx 调度台 + video-studio 聚合层 + 内置 R5/R6 子技能"
 fi
 
 # 4. 建仓并推送（远端已存在则只推送）

@@ -2,6 +2,25 @@
 
 本文件记录 zyx 总调度台的版本变更。版本号遵循 SemVer（MAJOR.MINOR.PATCH）。
 
+## 1.1.0 — 2026-11-24
+
+### 新增
+- **声明式依赖清单** `deps/manifest.json`：统一登记 R1–R6 与可选达尔文的来源类型（git/npx/bundled）、安装命令、必需/可选、子技能归属；doctor / updater / install 脚本共用这一份事实源，不再在脚本里硬编码依赖数组。
+- **一键安装器** `scripts/install.sh`：识别宿主 skills 目录（`--dir` 指定、`--list-hosts` 列出、`--install-deps` 同时装外部 git/npx 依赖），复制全部内置 Skill 后自动跑 doctor 自检。
+- **内置 R5 七子技能与 R6 迭代器**：`screenplay-development`、`short-drama-screenwriter`、`manju-character-library`、`manju-scene-library`、`cinematic-fight-direction`、`micro-expression-video`、`manju-production-pipeline`、`f2r-feedback-iteration` 随仓库打包，外部宿主可复现 R5/R6 能力。
+- **完整性校验** `check-integrity.py`：扫描 Skill 内 Markdown 链接与行内代码引用的本地文件，报悬空引用与缺失 SKILL.md；纳入 doctor 自检。
+- **清单读取器** `deps.py` 与共用库 `lib-common.sh`：宿主目录探测、依赖行、git 仓库清单统一从 manifest 读取；内置兄弟技能优先在 zyx 同级目录解析。
+- **回归用例补充**：依赖缺失降级（E7）、版本 behind/ahead 与远端不可达（E8）、产物命名与脱敏（E9）、模糊信号裁决（E10）。
+
+### 优化
+- **doctor 自检覆盖**：按清单逐项检查必需/可选依赖；补 R5 子技能检查（消除假阳性）；新增文件完整性段；`--online` 可选做上游网络可达性检查。
+- **updater 健壮性**：git 依赖从清单读取；连续失败阈值改为 `ZYX_FAIL_THRESHOLD` 可配置（默认 3）；自身版本比对补远端 HEAD SHA 记录（版本号 + SHA 双口径）。
+- **文档对齐**：README 安装段对齐 `skills/` 实际布局，补 Doubao 用户技能目录路径；SKILL.md 描述分层为生产路由触发与运维指令；路由表/产物规范指向 manifest 与预留远端接口说明。
+
+### 预留（未实现）
+- zyx 自身远端**自动快进覆盖**：版本号 + SHA 比对已接入；自动覆盖运行中的 zyx 目录仍需人工确认，未启用。
+- 远端产物 fetch/commit 接口：待有远端产物仓库后补，推送前强制脱敏与质检清单。
+
 ## 1.0.2 — 2026-11-24
 
 ### 新增
