@@ -35,6 +35,7 @@
 - 提交 skills.sh issue 后，隔几天回查是否被收录、是否出现在 `https://skills.sh/zhenliu1486/ZYX`。
 - 仓库满 14 天、star 到 20 后，再提 awesome 榜单 PR。
 - 每发一篇内容，回链仓库地址；观察安装量与 star 变化，再决定下一轮渠道。
+- 结构性改进（择机）：Anthropic 平台挂载仓库时只扫描根目录 `.claude/skills/`；当前规范目录为 `skills/`，后续可在仓库加一层 `.claude/skills/` 镜像（软链或安装期拷贝），不复制内容、避免双份漂移，以提升 Claude 侧挂载发现率。
 
 ## 六、合规红线
 
