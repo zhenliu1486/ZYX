@@ -1,0 +1,10 @@
+# 运行态与临时文件（不进入发布包）
+state/
+*.log
+state/backup/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+*.tmp
+.tmp-tool-results/
