@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 把技能目录打成豆包「上传技能」可直接用的 zip。
 # 用法：bash scripts/package-doubao.sh [--out DIR] [--only name1,name2]
-# 产物：dist/doubao/<skill>.zip（内含 <skill>/SKILL.md）
+# 产物：dist/doubao/<skill>.zip（SKILL.md 位于 zip 根目录，符合豆包打包要求）
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -44,7 +44,7 @@ with zipfile.ZipFile(dest, "w", zipfile.ZIP_DEFLATED) as z:
             if f in skip_files or f.endswith(".pyc"):
                 continue
             full = os.path.join(root_dir, f)
-            arc = os.path.join(name, "" if rel == "." else rel, f)
+            arc = f if rel == "." else os.path.join(rel, f)
             z.write(full, arc)
 print(dest)
 PY
@@ -54,5 +54,5 @@ done
 
 echo
 echo "已打包 $packed 个技能，跳过 $skipped 个；输出目录：$OUT"
-echo "安装：豆包 PC →「技能·连接器·伙伴」→「我的技能」→ 上传技能 → 拖入 zip。"
+echo "安装：豆包 PC →「技能·连接器·伙伴」→「我的技能」→ 上传技能 → 拖入 zip（SKILL.md 在 zip 根）；也可直接拖 skills/<name> 文件夹。"
 [ "$packed" -gt 0 ]

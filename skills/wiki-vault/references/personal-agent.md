@@ -20,7 +20,7 @@
    # 需要路由能力时再打 zyx 包
    bash scripts/package-doubao.sh --only zyx
    ```
-   产物在 `dist/doubao/<skill>.zip`（内含 `<skill>/SKILL.md`）。
+   产物在 `dist/doubao/<skill>.zip`，`SKILL.md` 位于 zip 根目录（豆包打包规范）。
 2. 打开豆包 PC →「技能·连接器·伙伴」→「我的技能」→「新建 / 上传技能」→ 拖入 zip 或直接拖入 `skills/wiki-vault` 文件夹。
 3. 安装后可直接在任务里说「建个知识库」「把这篇文章加进我的库」触发；也可在「工作伙伴」里新建一个「知识库管家」，把 `wiki-vault`（可选 `zyx`）挂上去。
 
