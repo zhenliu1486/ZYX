@@ -2,6 +2,18 @@
 
 本文件记录 zyx 总调度台的版本变更。版本号遵循 SemVer（MAJOR.MINOR.PATCH）。
 
+## 1.0.2 — 2026-11-24
+
+### 新增
+- **zyx 自身远端版本比对**：拉取远端 `skills/zyx/SKILL.md` 版本号与本地比对，输出最新 / 落后 / 超前；结果落盘 `state/self-version.json`，纳入 drift 报告与 doctor 自检。自身快进覆盖仍预留，落后时提示人工确认。
+- **doctor.sh 补全**：探测目录与 updater 对齐并支持 `ZYX_EXTRA_SKILL_DIRS`；跨宿主探测 dbs；新增 R5 video-studio、R6 f2r 可选依赖检查；新增「zyx 自身版本」自检段。
+- **远端分支回退**：自身版本抓取按 `ZYX_BRANCH`（默认 main）→ master 顺序回退，避免过渡期 404 误判。
+
+### 优化
+- 失败计数改用 Python 读写 JSON，保证状态文件格式合法；drift 报告同步改为 JSON 解析。
+- `route.sh` 探测目录与 updater 对齐并支持环境变量追加。
+- 清理 updater 中的死代码；README 补充 `ZYX_REPO` / `ZYX_BRANCH` / `ZYX_EXTRA_SKILL_DIRS` 环境变量说明。
+
 ## 1.0.1 — 2026-11-24
 
 ### 新增

@@ -14,13 +14,24 @@ HOST_DIRS=(
   "$HOME/.openclaw/skills"
   "$HOME/.agents/skills"
   "$HOME/.doubao/agent_mode/workspace/.user_skills"
+  "$HOME/.gemini/skills"
+  "$HOME/.kiro/skills"
+  "$HOME/.qwen/skills"
+  "$HOME/.grok/skills"
+  "$HOME/.hermes/skills"
 )
+if [ -n "${ZYX_EXTRA_SKILL_DIRS:-}" ]; then
+  IFS=':' read -ra _extra <<< "$ZYX_EXTRA_SKILL_DIRS"
+  HOST_DIRS+=("${_extra[@]}")
+fi
 
-# 代号|目录名|上游仓库
+# 代号|目录名|上游仓库|是否必需（必需缺失记 fail，可选缺失记 warn）
 DEPS=(
-  "R1女娲|nuwa-skill|https://github.com/alchaincyf/nuwa-skill"
-  "R2大师|master-skill|https://github.com/swaylq/master-skill"
-  "R3仓颉|cangjie-skill|https://github.com/kangarooking/cangjie-skill"
+  "R1女娲|nuwa-skill|https://github.com/alchaincyf/nuwa-skill|required"
+  "R2大师|master-skill|https://github.com/swaylq/master-skill|required"
+  "R3仓颉|cangjie-skill|https://github.com/kangarooking/cangjie-skill|required"
+  "R5影视聚合|video-studio|本地随 ZYX 仓库提供|optional"
+  "R6迭代器|f2r-feedback-iteration|本地打磨类子技能|optional"
 )
 
 warn=0
@@ -56,18 +67,24 @@ echo
 
 echo "## 2. 蒸馏器安装状态"
 for entry in "${DEPS[@]}"; do
-  IFS='|' read -r label dir repo <<< "$entry"
+  IFS='|' read -r label dir repo level <<< "$entry"
   p="$(find_local "$dir" || true)"
   if [ -n "$p" ]; then
     echo "  ✅ $label → $p"
   else
-    echo "  ❌ $label 未安装（$dir）。安装: git clone $repo"
-    fail=1
+    if [ "$level" = "required" ]; then
+      echo "  ❌ $label 未安装（$dir）。安装: git clone $repo"
+      fail=1
+    else
+      echo "  ⚠ $label 未安装（$dir）。$repo"
+      warn=1
+    fi
   fi
 done
-# dbs 主调度台
-if [ -f "$HOME/.doubao/agent_mode/workspace/.user_skills/dbs/SKILL.md" ] || [ -f "$HOME/.agents/skills/dbs/SKILL.md" ]; then
-  echo "  ✅ dbs 主调度台已安装"
+# dbs 主调度台（跨宿主探测）
+dbs_path="$(find_local dbs || true)"
+if [ -n "$dbs_path" ]; then
+  echo "  ✅ dbs 主调度台已安装 → $dbs_path"
 else
   echo "  ⚠ dbs 主调度台未检测到；当下问题诊断/文案能力不可用。安装: npx -y skills add dontbesilent2025/dbskill -g --all"
   warn=1
@@ -94,6 +111,23 @@ if mkdir -p "$out/.write-test" 2>/dev/null; then
 else
   echo "  ❌ 产物目录不可写: $out"
   fail=1
+fi
+echo
+
+echo "## 5. zyx 自身版本"
+SELF_VER="$ZYX_DIR/state/self-version.json"
+if [ -f "$SELF_VER" ]; then
+  SELF_VER="$SELF_VER" python3 <<'PY'
+import json, os
+try:
+    d=json.load(open(os.environ["SELF_VER"]))
+    msg={"equal":"已是最新","behind":"⚠ 本地落后远端，建议更新","ahead":"本地超前远端（未发布）","unknown":"版本号无法比对"}
+    print(f"  本地 {d['local']} / 远端 {d['remote']} — {msg.get(d['status'], d['status'])}（{d['checked_at']}）")
+except Exception:
+    print("  ⚠ 自身版本记录损坏，可跑 updater.sh 重新比对。")
+PY
+else
+  echo "  ℹ 尚未做过远端版本比对；运行 bash $SCRIPT_DIR/updater.sh --check-drift 后生成。"
 fi
 echo
 

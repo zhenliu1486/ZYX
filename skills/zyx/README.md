@@ -70,9 +70,10 @@ zyx/
 ## 自检与更新
 
 - **首次触发自注册**：`scripts/env-registry.sh` 探测 cron / launchd / systemd 并幂等注册后台周检；`--status` 查看状态，`--unregister` 卸载。
-- **静默更新**：`scripts/updater.sh` 对 R1/R2/R3 做 ff-only 快进 + 浅克隆兜底重置（旧 HEAD 备份），dbs 只比对不覆盖；失败计数、连续失败提示与 drift 报告（`--check-drift`）。zyx 自身版本检查预留 `ZYX_REPO` 接口，发布到远端后接入。
-- **自检**：`bash scripts/doctor.sh` 输出就绪状态、缺什么、怎么补。
+- **静默更新**：`scripts/updater.sh` 对 R1/R2/R3 做 ff-only 快进 + 浅克隆兜底重置（旧 HEAD 备份），dbs 只比对不覆盖；失败计数、连续失败提示与 drift 报告（`--check-drift`）。zyx 自身会拉取远端版本号与本地比对，落后/超前/最新写入 `state/self-version.json` 并在 drift 报告里提示；自身快进覆盖仍需人工确认，不自动执行。
+- **自检**：`bash scripts/doctor.sh` 输出就绪状态、缺什么、怎么补，含自身版本比对结果。
 - **定时周检**：每周日 18:00 触发上游更新检查；纯云端无调度器环境会降级提示。
+- **环境变量**：`ZYX_REPO` 覆盖自身远端仓库地址，`ZYX_BRANCH` 覆盖远端分支（默认 `main`），`ZYX_EXTRA_SKILL_DIRS` 冒号分隔追加额外 Skill 探测目录。
 
 ## 规范对齐
 

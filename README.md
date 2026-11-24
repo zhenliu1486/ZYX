@@ -53,7 +53,7 @@ cp -r skills/video-studio ~/.claude/skills/video-studio
 
 ## 版本
 
-当前 `zyx` v1.0.1，变更记录见 [skills/zyx/CHANGELOG.md](skills/zyx/CHANGELOG.md)。
+当前 `zyx` v1.0.2，变更记录见 [skills/zyx/CHANGELOG.md](skills/zyx/CHANGELOG.md)。
 
 ## 许可
 

@@ -20,7 +20,13 @@ ZYX_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 STATE_DIR="$ZYX_DIR/state"
 BACKUP_DIR="$STATE_DIR/backup"
 LOG_FILE="$STATE_DIR/updater.log"
+SELF_VER_FILE="$STATE_DIR/self-version.json"
 mkdir -p "$STATE_DIR" "$BACKUP_DIR"
+
+# zyx 自身远端仓库（可用环境变量 ZYX_REPO / ZYX_BRANCH 覆盖）
+DEFAULT_ZYX_REPO="https://github.com/zhenliu1486/ZYX"
+ZYX_REPO="${ZYX_REPO:-$DEFAULT_ZYX_REPO}"
+ZYX_BRANCH="${ZYX_BRANCH:-main}"
 
 SILENT=0
 CHECK_DRIFT=0
@@ -54,24 +60,34 @@ if [ -n "${ZYX_EXTRA_SKILL_DIRS:-}" ]; then
   HOST_DIRS+=("${_extra[@]}")
 fi
 
-# 失败计数状态文件
+# 失败计数状态文件（JSON，python 读写保证格式合法）
 FAIL_STATE="$STATE_DIR/fail-count.json"
 record_failure() { # $1=key $2=reason
-  local key="$1" reason="$2" count=0
-  if [ -f "$FAIL_STATE" ]; then
-    count="$(grep -o "\"$key\": *[0-9]*" "$FAIL_STATE" | grep -o '[0-9]*' || echo 0)"
-  fi
-  count=$((count + 1))
-  # 简单写入：key → count
-  local tmp="$FAIL_STATE.tmp"
-  cp "$FAIL_STATE" "$tmp" 2>/dev/null || true
-  grep -v "\"$key\"" "$tmp" 2>/dev/null > "$FAIL_STATE" || true
-  echo "\"$key\": $count" >> "$FAIL_STATE"
-  rm -f "$tmp"
+  local key="$1" reason="$2"
+  export FAIL_STATE
+  local count
+  count="$(python3 - "$key" <<'PY'
+import json, os, sys
+f=os.environ["FAIL_STATE"]; k=sys.argv[1]
+try: d=json.load(open(f)) if os.path.exists(f) else {}
+except Exception: d={}
+d[k]=int(d.get(k,0))+1
+json.dump(d, open(f,"w"), ensure_ascii=False, indent=2)
+print(d[k])
+PY
+)"
   log "失败计数 $key = $count（$reason）"
 }
 record_success() { # $1=key
-  [ -f "$FAIL_STATE" ] && grep -v "\"$1\"" "$FAIL_STATE" 2>/dev/null > "$FAIL_STATE.tmp" && mv "$FAIL_STATE.tmp" "$FAIL_STATE"
+  export FAIL_STATE
+  python3 - "$1" <<'PY'
+import json, os, sys
+f=os.environ["FAIL_STATE"]; k=sys.argv[1]
+try: d=json.load(open(f)) if os.path.exists(f) else {}
+except Exception: d={}
+d.pop(k, None)
+json.dump(d, open(f,"w"), ensure_ascii=False, indent=2)
+PY
 }
 
 # 代号|目录名|上游仓库|分支
@@ -150,26 +166,63 @@ update_git_repo() { # $1=label $2=dir $3=repo $4=branch
   log "$label ($dir) 更新失败，保留本地版本（备份 HEAD: $(cat "$BACKUP_DIR/$dir.head" 2>/dev/null)）。"
 }
 
-# ---- zyx 自身版本检查 ----
+# ---- zyx 自身版本检查（远端版本号比对；自身快进更新仍预留，不自动覆盖运行中的 Skill）----
+_zyx_remote_version() {
+  local owner_repo="${ZYX_REPO#https://github.com/}" branch url body
+  for branch in "$ZYX_BRANCH" master; do
+    url="https://raw.githubusercontent.com/$owner_repo/$branch/skills/zyx/SKILL.md"
+    body="$(curl -fsSL --max-time 10 "$url" 2>/dev/null)" && [ -n "$body" ] && {
+      echo "$body" | grep -m1 'version:' | sed -E 's/.*version: *"?([^" ]+)"?.*/\1/'
+      return 0
+    }
+  done
+  return 1
+}
+
+_ver_compare() { # $1=local $2=remote -> equal|behind|ahead|unknown
+  python3 - "$1" "$2" <<'PY'
+import sys
+def v(s):
+    try: return [int(x) for x in str(s).split('.')]
+    except Exception: return None
+a, b = v(sys.argv[1]), v(sys.argv[2])
+if a is None or b is None:
+    print("unknown"); sys.exit()
+print("equal" if a == b else ("behind" if a < b else "ahead"))
+PY
+}
+
 check_zyx_self() {
-  local current
+  local current remote cmp
   current="$(grep -m1 'version:' "$ZYX_DIR/SKILL.md" | sed -E 's/.*version: *"?([^" ]+)"?.*/\1/')"
-  log "zyx 自身版本: $current（本地）。"
-  # 预留远端自更新接口：配置 ZYX_REPO=<git-url> 后，fetch 远端并比对 commit/VERSION。
-  # 待 zyx 发布到 GitHub 后在此接入：clone/fetch 远端 → 比对 HEAD 或 VERSION → 快进更新 zyx 自身目录。
-  if [ -n "${ZYX_REPO:-}" ]; then
-    local remote_head="unknown"
-    local tmpdir="$STATE_DIR/zyx-self-check"
-    rm -rf "$tmpdir"; mkdir -p "$tmpdir"
-    if git clone --depth 1 "$ZYX_REPO" "$tmpdir" >>"$LOG_FILE" 2>&1; then
-      remote_head="$(git -C "$tmpdir" rev-parse HEAD 2>/dev/null || echo unknown)"
-      log "ZYX_REPO=$ZYX_REPO 远端 HEAD: ${remote_head:0:7}（本地版本 $current）。远端自更新逻辑待发布后接入。"
-    else
-      record_failure "zyx-self" "ZYX_REPO 不可达"
-      log "ZYX_REPO 不可达，跳过 zyx 自身远端比对。"
-    fi
-    rm -rf "$tmpdir"
+  remote="$(_zyx_remote_version || true)"
+
+  if [ -z "$remote" ]; then
+    record_failure "zyx-self" "远端版本不可达"
+    log "zyx 自身版本: 本地 $current；远端不可达，跳过自身比对（仓库: $ZYX_REPO@$ZYX_BRANCH）。"
+    return 0
   fi
+  record_success "zyx-self"
+
+  cmp="$(_ver_compare "$current" "$remote")"
+  case "$cmp" in
+    equal)
+      log "zyx 自身已是最新（本地 $current = 远端 $remote）。" ;;
+    behind)
+      log "⚠ zyx 本地 $current 落后远端 $remote；建议按远端更新 zyx 自身（自动快进未启用，需人工确认）。" ;;
+    ahead)
+      log "zyx 本地 $current 超前远端 $remote（本地改动尚未发布）。" ;;
+    *)
+      log "zyx 版本号无法比对：本地 $current / 远端 $remote。" ;;
+  esac
+
+  # 落盘自身版本比对结果，供 drift 报告与 doctor 读取
+  ZYX_SELF_VER_FILE="$SELF_VER_FILE" python3 - "$current" "$remote" "$cmp" <<'PY'
+import json, os, sys, time
+f=os.environ["ZYX_SELF_VER_FILE"]
+data={"local":sys.argv[1],"remote":sys.argv[2],"status":sys.argv[3],"checked_at":time.strftime("%Y-%m-%d %H:%M:%S")}
+json.dump(data, open(f,"w"), ensure_ascii=False, indent=2)
+PY
 }
 
 # ---- dbs 家族：只比对版本，不自动覆盖 ----
@@ -187,25 +240,41 @@ for entry in "${REPOS[@]}"; do
 done
 check_dbs
 
-# drift 报告：汇总失败计数与连续失败项
+# drift 报告：汇总失败计数、连续失败项与 zyx 自身版本状态
 if [ "$CHECK_DRIFT" -eq 1 ]; then
   echo "----- drift 报告 -----"
-  if [ -f "$FAIL_STATE" ]; then
-    cat "$FAIL_STATE"
-  else
-    echo "无失败记录。"
-  fi
+  echo "## 失败计数"
+  FAIL_STATE="$FAIL_STATE" python3 <<'PY'
+import json, os
+f=os.environ["FAIL_STATE"]
+try: d=json.load(open(f)) if os.path.exists(f) else {}
+except Exception: d={}
+if d:
+    for k,v in sorted(d.items()): print(f"  {k}: {v}")
+else:
+    print("  无失败记录。")
+PY
   # 连续失败 ≥ 3 次的项，提示下次对话需人工检查
   threshold=3
-  if [ -f "$FAIL_STATE" ]; then
-    grep -oE '"[^"]+": *[0-9]+' "$FAIL_STATE" | while IFS=: read -r k v; do
-      v="$(echo "$v" | tr -d ' "')"
-      k="$(echo "$k" | tr -d '"')"
-      if [ "${v:-0}" -ge "$threshold" ]; then
-        echo "⚠ $k 连续失败 $v 次，下次对话请人工检查网络/安装状态。"
-      fi
-    done
-  fi
+  FAIL_STATE="$FAIL_STATE" THRESHOLD="$threshold" python3 <<'PY'
+import json, os
+f=os.environ["FAIL_STATE"]; t=int(os.environ["THRESHOLD"])
+try: d=json.load(open(f)) if os.path.exists(f) else {}
+except Exception: d={}
+for k,v in sorted(d.items()):
+    if int(v)>=t: print(f"  ⚠ {k} 连续失败 {v} 次，下次对话请人工检查网络/安装状态。")
+PY
+  echo "## zyx 自身版本"
+  SELF="$SELF_VER_FILE" python3 <<'PY'
+import json, os
+f=os.environ["SELF"]
+try:
+    d=json.load(open(f))
+    msg={"equal":"已是最新","behind":"⚠ 本地落后远端，建议更新","ahead":"本地超前远端（未发布）","unknown":"版本号无法比对"}
+    print(f"  本地 {d['local']} / 远端 {d['remote']} — {msg.get(d['status'], d['status'])}（{d['checked_at']}）")
+except Exception:
+    print("  未生成自身版本比对结果。")
+PY
 fi
 log "===== zyx 静默更新结束 ====="
 exit 0

@@ -13,7 +13,16 @@ HOST_DIRS=(
   "$HOME/.openclaw/skills"
   "$HOME/.agents/skills"
   "$HOME/.doubao/agent_mode/workspace/.user_skills"
+  "$HOME/.gemini/skills"
+  "$HOME/.kiro/skills"
+  "$HOME/.qwen/skills"
+  "$HOME/.grok/skills"
+  "$HOME/.hermes/skills"
 )
+if [ -n "${ZYX_EXTRA_SKILL_DIRS:-}" ]; then
+  IFS=':' read -ra _extra <<< "$ZYX_EXTRA_SKILL_DIRS"
+  HOST_DIRS+=("${_extra[@]}")
+fi
 
 resolve() { # $1=目录名  $2=环境变量名
   local dir="$1" envvar="$2"

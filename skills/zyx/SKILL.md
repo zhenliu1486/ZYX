@@ -5,7 +5,7 @@ license: MIT
 compatibility: 兼容 Claude Code / Codex / OpenClaw / Hermes / Kiro / Cline 等 Agent Skills 标准宿主；引用外部蒸馏器路径，需与它们同机安装。
 metadata:
   author: "ZYX"
-  version: "1.0.1"
+  version: "1.0.2"
   layer: "1-router"
   schema: "agentskills.io"
 allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
@@ -99,7 +99,7 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 - **首次自注册**：首次调用 zyx 时 `env-registry.sh` 探测环境并注册周检任务，之后在后台持续运行；注册状态在 `state/registry.json`，重复调用幂等不重复注册。
 - **静默更新器** `updater.sh`：每周日 18:00（或手动）执行：
   1. 对女娲/大师/仓颉三个 git 蒸馏器做 `--ff-only` 快进更新；本地有未提交改动或分叉时不强行覆盖，保留本地并记录；更新前备份 HEAD 到 `state/backup/`。
-  2. 检查 **zyx 自身版本**（本地版本号；配置 `ZYX_REPO` 后可接入远端 commit/VERSION 比对与自身快进）。
+  2. 检查 **zyx 自身版本**：拉取远端 `skills/zyx/SKILL.md` 版本号与本地比对，输出最新/落后/超前；落后时提示人工确认更新，自身快进覆盖仍预留不自动执行。仓库与分支可用 `ZYX_REPO` / `ZYX_BRANCH` 环境变量覆盖。
   3. dbs 家族只比对官方版本并记录差异，不批量自动覆盖（目录式安装，由 dbs-update 处理）。
   4. 失败计数写入 `state/fail-count.json`；连续失败达阈值在下次对话提示；`--check-drift` 输出 drift 报告。
 - **日志**：更新过程写入 `state/updater.log`；`--silent` 模式不在前台打印。
