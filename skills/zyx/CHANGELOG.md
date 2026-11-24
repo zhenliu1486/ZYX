@@ -2,6 +2,20 @@
 
 本文件记录 zyx 总调度台的版本变更。版本号遵循 SemVer（MAJOR.MINOR.PATCH）。
 
+## 1.3.0 — 2026-11-24
+
+### 新增
+- **豆包 personal agent 适配**：`wiki.py where`（库名/根/主题，`--json` 机器读）与 `wiki.py brief`（≤600 字简报：规模/最近日志/热缓存，`--with-lint` 带巡检摘要），供豆包侧记忆注入与会话开头加载。
+- **豆包环境默认库根**：检测 `DOUBAO_*` 运行时或 `~/Doubao` 存在时，`wiki init` 默认落 `~/Doubao/wiki/<slug>`；`ZYX_WIKI_HOME` 可覆盖，其他宿主维持桌面 `zyx-output/wiki`。
+- **技能上传打包脚本** `scripts/package-doubao.sh`：把技能目录打成含 `<skill>/SKILL.md` 的 zip，供豆包 PC「我的技能 → 上传技能」直接拖入；打包时校验 YAML name/description，排除 `state/`、`__pycache__`。
+- **「知识库管家」人设卡** `docs/doubao/personal-agent-profile.md`：可直接粘贴的人设指令、开场白、快捷指令与挂载验证步骤。
+- **结合说明** `skills/wiki-vault/references/personal-agent.md`：技能/记忆/定时任务/分发四层落地、安装步骤、移动端回复规范、隐私与边界。
+- **回归用例** E17–E18：豆包侧会话开头 `brief`、库位置记忆与默认路径。
+
+### 变更
+- `wiki-selftest.py` 由 31 项扩为 34 项（新增 `where`、`brief`、`brief --with-lint`）；`wiki-vault` metadata 版本 1.1.0。
+- R7 文档补豆包小节；README 补安装与用法；`wiki-vault` SKILL 增加 `where/brief` 命令。
+
 ## 1.2.0 — 2026-11-24
 
 ### 新增

@@ -5,7 +5,7 @@ license: MIT
 compatibility: 兼容 Claude Code / Codex / OpenClaw / Cursor / Gemini CLI / OpenCode 等 Agent Skills 标准宿主；仅依赖 Python 3 标准库与 Bash，无外部必需依赖；Obsidian 为可选阅读前端，不内置插件配置。
 metadata:
   author: "ZYX"
-  version: "1.0.0"
+  version: "1.1.0"
   layer: "2-capability"
   schema: "agentskills.io"
 allowed-tools: Read, Write, Edit, Bash
@@ -30,7 +30,7 @@ allowed-tools: Read, Write, Edit, Bash
 
 | 形态 | 命令 | 说明 |
 |---|---|---|
-| 受管库（新建） | `python3 scripts/wiki.py init <slug> [--topic "主题"]` | 默认落 `<桌面>/zyx-output/wiki/<slug>/`，生成 `raw/`、`wiki/` 与种子文件 |
+| 受管库（新建） | `python3 scripts/wiki.py init <slug> [--topic "主题"]` | 豆包环境默认落 `~/Doubao/wiki/<slug>/`，其他宿主落 `<桌面>/zyx-output/wiki/<slug>/`（`ZYX_WIKI_HOME` 可覆盖），生成 `raw/`、`wiki/` 与种子文件 |
 | 挂载库（已有 Obsidian 库） | `python3 scripts/wiki.py mount <slug> <库路径> [--provision]` | **不搬动、不改名、不重构**用户既有目录；默认只检测，缺结构不擅自补，同意后才 `--provision` |
 
 用户的库若把知识放别的目录名，用 `--wiki-dir` / `--raw-dir` 指过去，不要改用户的目录名。
@@ -68,6 +68,8 @@ python3 scripts/wiki.py list            # 列出库（--plain 只出 slug；--js
 python3 scripts/wiki.py resolve [<slug>] # 打印库根
 python3 scripts/wiki.py use <slug>       # 切换活动库（多会话统一写同一个库）
 python3 scripts/wiki.py status           # 活动库与持锁状态
+python3 scripts/wiki.py where            # 库名/根/主题（供 personal agent 记忆，--json 机器读）
+python3 scripts/wiki.py brief            # ≤600 字简报：规模/最近/热缓存（--with-lint 带巡检）
 python3 scripts/wiki.py lock <slug>      # 取写锁（--force 接管陈旧锁）
 python3 scripts/wiki.py unlock <slug>
 
@@ -113,16 +115,28 @@ python3 scripts/wiki.py sync --status
 ## 8. 可选模板与自测
 
 - `assets/templates/`：五类页面模板（`{{title}}` / `{{slug}}` / `{{date}}` 占位），可复制进 Obsidian 模板文件夹；R7 不内置插件配置，`new-page` 已能直接生成同结构。
-- `scripts/wiki-selftest.py`：31 项端到端回归（建库/锁/并发/重复/回链/归档/检索/lint/挂载/sync），临时库跑完即清理；`doctor.sh --full` 会调用它。
+- `scripts/wiki-selftest.py`：34 项端到端回归（建库/锁/并发/重复/回链/归档/检索/lint/挂载/sync），临时库跑完即清理；`doctor.sh --full` 会调用它。
 
-## 9. 与其他路由的衔接
+## 9. 在豆包 personal agent 里用
+
+豆包侧没有公开的个人 Agent API，能接的是三层：**技能（上传 SKILL.md）＋ 记忆（稳定事实与简报）＋ 定时任务（主动巡检）**。
+
+| 层 | 落地 |
+|---|---|
+| 技能 | PC 端「技能·连接器·伙伴 → 我的技能 → 上传技能」，拖入 `bash scripts/package-doubao.sh --only wiki-vault` 产出的 zip |
+| 记忆 | 让 Agent 记住 `where` 输出的 `slug / root / topic`；会话开头跑 `brief`，不整库塞上下文 |
+| 主动 | 每周定时跑 `wiki-lint.py` + `brief --with-lint`，把断链/缺页/孤儿/陈旧页推给用户；R7 不自动建任务 |
+
+人设卡（可直接粘贴的「知识库管家」指令）见 `docs/doubao/personal-agent-profile.md`；机制、安装步骤、移动端回复规范与边界见 `references/personal-agent.md`。
+
+## 10. 与其他路由的衔接
 
 - **晋级到 R3**：某份原料在库里沉淀出独立复用价值，且过三重验证（来源充分 / 可执行 / 任务增益）+ 具备独立复用价值，才委派仓颉打包成 Skill。
 - **深挖走 R1/R2**：人物视角、行业打法不在库里造，wiki 只留摘要与 wikilink。
 - **改版走 R6**：页面被否或要按反馈迭代时，先由 f2r 把反馈显性化为规则，再回写。
 - **当下问题走 R4**：只要判断、不要求进长期库的请求不进 R7。
 
-## 10. 边界与失败模式
+## 11. 边界与失败模式
 
 - 挂载用户库时误建目录、误改结构 → 默认不写，`--provision` 才补缺失骨架。
 - 并发写坏库 → 单写锁强制拦截；陈旧锁可 `--force` 但需先核对上次写入。
@@ -130,6 +144,6 @@ python3 scripts/wiki.py sync --status
 - 库变大后上下文膨胀 → 靠 `hot.md` 热缓存 + 按需只读命中页；不整库塞进对话。
 - 版权与隐私 → 不存长段原文，只留摘要 + 最短引用；入库前脱敏。
 
-## 11. 决策记录
+## 12. 决策记录
 
-- 2026-11-24：确认为独立 R7 路由（不并入 R3）；支持挂载已有 Obsidian 库；只做 Obsidian Markdown；**不设覆盖度闸门**；显式单写、禁并行、多会话写同一库；预留 git 同步接口；页面晋级 Skill 复用三重验证 + 独立复用价值。
+- 2026-11-24：落地豆包 personal agent 适配——豆包环境默认库根改 `~/Doubao/wiki`，新增 `where`/`brief` 供记忆注入，新增上传打包脚本与「知识库管家」人设卡；不接小豆私有接口、不自动建任务。\n- 2026-11-24：确认为独立 R7 路由（不并入 R3）；支持挂载已有 Obsidian 库；只做 Obsidian Markdown；**不设覆盖度闸门**；显式单写、禁并行、多会话写同一库；预留 git 同步接口；页面晋级 Skill 复用三重验证 + 独立复用价值。

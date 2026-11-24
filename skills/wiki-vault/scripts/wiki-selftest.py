@@ -117,6 +117,14 @@ def main():
         code, out, _ = run(["promote-check", "概念甲"], env)
         check("晋级自查可运行", code == 0 and "晋级自查" in out, f"exit={code}")
 
+        # 8.5 简报与定位
+        code, out, _ = run(["where"], env)
+        check("where 打印库位置", code == 0 and "root:" in out, f"exit={code}")
+        code, out, _ = run(["brief"], env)
+        check("brief 生成简报", code == 0 and "知识库简报" in out, f"exit={code}")
+        code, out, _ = run(["brief", "--with-lint"], env)
+        check("brief 可带巡检摘要", code == 0 and "巡检" in out, f"exit={code}")
+
         # 9. lint
         code, out, _ = run(["list"], env)
         check("库列表可读", code == 0 and "demo" in out, f"exit={code}")

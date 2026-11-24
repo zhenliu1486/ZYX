@@ -1,6 +1,6 @@
 # ZYX · Agent Skill 总调度台
 
-一个薄壳路由入口 Skill：判断原料属于「人 / 行业 / 长内容 / 当下问题 / 内容生产 / 产物迭代」，转发给对应独立 Skill，统一收口产物。被转发的蒸馏器保持独立、各自追上游 git 更新；公共校验、质检、可信度、产物规范与 Darwin 式压测抽成 `shared/` 共享底座。
+一个薄壳路由入口 Skill：判断原料属于「人 / 行业 / 长内容 / 当下问题 / 内容生产 / 产物迭代 / 长期知识库」，转发给对应独立 Skill，统一收口产物。被转发的蒸馏器保持独立、各自追上游 git 更新；公共校验、质检、可信度、产物规范与 Darwin 式压测抽成 `shared/` 共享底座。
 
 ## 仓库结构
 
@@ -15,7 +15,13 @@ ZYX/
 │   │   ├── scripts/          # 路由解析、自注册、静默更新、自检、产物目录
 │   │   ├── shared/          # 第 3 层：共享底座（校验/质检/可信度/规范/压测）
 │   │   └── evals/           # 路由回归用例
-│   └── video-studio/         # R5 影视/短剧/漫剧制作聚合层（内部路由子技能）
+│   ├── video-studio/         # R5 影视/短剧/漫剧制作聚合层（内部路由子技能）
+│   └── wiki-vault/           # R7 长期知识库（raw/ 只读 → wiki/ 编译）
+├── docs/
+│   ├── doubao/              # 豆包 personal agent 人设卡
+│   ├── research/            # 设计与决策记录
+│   └── promo/               # 对外素材
+├── scripts/package-doubao.sh # 打成豆包「上传技能」可用的 zip
 ├── .gitignore
 └── LICENSE
 ```
@@ -30,6 +36,7 @@ ZYX/
 | 当下问题（诊断/文案/决策/协作） | dbs 家族 | dontbesilent2025/dbskill |
 | 影视/短剧/漫剧制作 | `video-studio` 聚合层 | 本仓库 `skills/video-studio` |
 | 已有产物二次迭代 | `f2r-feedback-iteration` | 本地打磨类子技能 |
+| 长期知识库（个人/领域 Wiki） | `wiki-vault` | 本仓库 `skills/wiki-vault` |
 
 > R1–R4 为外部独立蒸馏器，需与本仓库 Skill 同机安装；R5 聚合层随本仓库提供。
 
@@ -47,13 +54,26 @@ cp -r skills/video-studio ~/.claude/skills/video-studio
 
 依赖：Bash、git；仓颉本体另需 Python 3.10+ 与 PyYAML。首次调用 zyx 时会自动探测环境并注册后台周检（幂等）。
 
+## 在豆包 personal agent 里用
+
+豆包侧没有公开的个人 Agent API，能接的是三层：**技能上传 + 记忆注入 + 定时巡检**。
+
+```bash
+# 打成豆包「上传技能」可直接拖入的 zip
+bash scripts/package-doubao.sh --only wiki-vault
+```
+
+安装：豆包 PC →「技能·连接器·伙伴」→「我的技能」→ 上传技能 → 拖入 `dist/doubao/wiki-vault.zip`。
+在豆包环境里，知识库默认建在 `~/Doubao/wiki/<slug>`（`ZYX_WIKI_HOME` 可覆盖）；让 Agent 记住 `wiki.py where` 的库名与路径，会话开头跑 `wiki.py brief`，每周任务跑 `wiki-lint.py`。
+「知识库管家」人设卡见 [docs/doubao/personal-agent-profile.md](docs/doubao/personal-agent-profile.md)，机制与边界见 [skills/wiki-vault/references/personal-agent.md](skills/wiki-vault/references/personal-agent.md)。
+
 ## 规范对齐
 
 遵循开放 Agent Skills 规范（agentskills.io）：YAML frontmatter、渐进式披露（元数据 → 正文 → 按需加载 references/scripts/assets）、正文 500 行以内。模板参考 Anthropic agentskills 开放规范与 Google 官方 skills 仓库格式。
 
 ## 版本
 
-当前 `zyx` v1.0.2，变更记录见 [skills/zyx/CHANGELOG.md](skills/zyx/CHANGELOG.md)。
+当前 `zyx` v1.3.0，变更记录见 [skills/zyx/CHANGELOG.md](skills/zyx/CHANGELOG.md)。
 
 ## 许可
 

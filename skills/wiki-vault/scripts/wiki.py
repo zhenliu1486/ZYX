@@ -83,6 +83,23 @@ def lock_root():
     return os.path.join(state_dir(), "locks")
 
 
+def is_doubao_env():
+    """是否运行在豆包 Agent 环境（云端工作区）。"""
+    if any(os.environ.get(k) for k in ("DOUBAO_SANDBOX_TYPE", "DOUBAO_OFFICE_AGENT_NAME", "DOUBAO_VERSION")):
+        return True
+    return os.path.isdir(os.path.expanduser("~/Doubao"))
+
+
+def default_wiki_home():
+    """默认库根：显式 ZYX_WIKI_HOME > 豆包 ~/Doubao/wiki > 桌面 zyx-output/wiki。"""
+    env = os.environ.get("ZYX_WIKI_HOME")
+    if env:
+        return os.path.abspath(os.path.expanduser(env))
+    if is_doubao_env():
+        return os.path.expanduser("~/Doubao/wiki")
+    return os.path.join(desktop_output_root(), "wiki")
+
+
 def desktop_output_root():
     z = zyx_dir()
     if z:
@@ -469,7 +486,7 @@ def cmd_init(args):
         print(f"库已存在: {slug}", file=sys.stderr)
         return 1
     root = os.path.abspath(args.root) if args.root else os.path.join(
-        desktop_output_root(), "wiki", slug
+        default_wiki_home(), slug
     )
     os.makedirs(root, exist_ok=True)
     created = provision(root, args.raw_dir, args.wiki_dir)
@@ -745,6 +762,98 @@ def cmd_log(args):
     touch(v)
     save_registry(data)
     print(f"已追加日志: {log}")
+    return 0
+
+
+def read_front_matter(path):
+    """极简 frontmatter 读取：只取标量与方括号列表，用于简报统计。"""
+    try:
+        text = open(path, encoding="utf-8").read()
+    except Exception:
+        return {}, ""
+    m = re.match(r"^---\s*\n(.*?)\n---\s*\n", text, re.S)
+    if not m:
+        return {}, text
+    fm = {}
+    for line in m.group(1).splitlines():
+        if ":" not in line:
+            continue
+        k, v = line.split(":", 1)
+        fm[k.strip()] = v.strip().strip("'\"")
+    return fm, text[m.end():]
+
+
+def cmd_where(args):
+    data = load_registry()
+    v = active_vault(data, args.vault)
+    if args.json:
+        print(json.dumps({k: v.get(k) for k in ("slug", "root", "topic", "mode", "obsidian", "wiki_dir")}, ensure_ascii=False, indent=2))
+        return 0
+    print(f"slug: {v['slug']}")
+    print(f"root: {v['root']}")
+    print(f"topic: {v.get('topic') or '（未设置）'}")
+    print(f"mode: {v.get('mode')}｜wiki_dir: {v.get('wiki_dir', 'wiki')}")
+    return 0
+
+
+def cmd_brief(args):
+    data = load_registry()
+    v = active_vault(data, args.vault)
+    counts = {}
+    for path in iter_pages(v):
+        if os.path.basename(path) in ("index.md", "log.md", "hot.md", "overview.md"):
+            continue
+        fm, _ = read_front_matter(path)
+        t = fm.get("type") or "unknown"
+        counts[t] = counts.get(t, 0) + 1
+    total = sum(counts.values())
+    labels = [("concept", "概念"), ("entity", "实体"), ("source", "来源"), ("comparison", "对比"), ("synthesis", "综述")]
+    parts = [f"{cn}{counts.get(en, 0)}" for en, cn in labels if counts.get(en, 0)]
+    if counts.get("unknown"):
+        parts.append(f"未标类型{counts['unknown']}")
+    log_path = os.path.join(wiki_root(v), "log.md")
+    recent = []
+    if os.path.isfile(log_path):
+        for line in open(log_path, encoding="utf-8"):
+            if line.startswith("## ["):
+                recent.append(line.strip().lstrip("# ").strip())
+    hot_path = os.path.join(wiki_root(v), "hot.md")
+    hot = ""
+    if os.path.isfile(hot_path):
+        for line in open(hot_path, encoding="utf-8"):
+            t = line.strip()
+            if t and not t.startswith("#") and not t.startswith(">"):
+                hot = t
+                break
+    lines = [
+        f"# 知识库简报 · {v['slug']}",
+        f"主题：{v.get('topic') or '未设置'}",
+        f"页面：{total}" + (f"（{'｜'.join(parts)}）" if parts else ""),
+    ]
+    if recent:
+        lines.append("最近：" + "；".join(recent[-2:]))
+    if hot:
+        lines.append("热缓存：" + hot[:160])
+    if args.with_lint:
+        try:
+            out = subprocess.check_output(
+                [sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "wiki-lint.py"), v["root"], "--json"],
+                text=True, stderr=subprocess.DEVNULL, timeout=30,
+            )
+            sm = json.loads(out).get("summary", {})
+            lines.append(
+                f"巡检：断链 {sm.get('broken_links', 0)}｜缺页 {sm.get('missing_pages', 0)}"
+                f"｜孤儿 {sm.get('orphans', 0)}｜未进索引 {sm.get('not_in_index', 0)}"
+            )
+        except Exception:
+            lines.append("巡检：暂时不可用")
+    lines.append(f"位置：{v['root']}")
+    text = "\n".join(lines)
+    if args.json:
+        print(json.dumps({"slug": v["slug"], "root": v["root"], "topic": v.get("topic", ""), "counts": counts,
+                          "recent": recent[-2:], "hot": hot[:160], "text": text}, ensure_ascii=False, indent=2))
+        return 0
+    print(text[: args.max_chars])
     return 0
 
 
@@ -1064,6 +1173,18 @@ def build_parser():
     sp.add_argument("--vault", default=None)
     sp.add_argument("--force", action="store_true")
     sp.set_defaults(func=cmd_archive)
+
+    sp = sub.add_parser("where", help="打印活动库位置（供 personal agent 记忆）")
+    sp.add_argument("--vault", default=None)
+    sp.add_argument("--json", action="store_true")
+    sp.set_defaults(func=cmd_where)
+
+    sp = sub.add_parser("brief", help="生成 ≤600 字知识库简报（会话开头读）")
+    sp.add_argument("--vault", default=None)
+    sp.add_argument("--with-lint", action="store_true")
+    sp.add_argument("--max-chars", type=int, default=600)
+    sp.add_argument("--json", action="store_true")
+    sp.set_defaults(func=cmd_brief)
 
     sp = sub.add_parser("promote-check", help="晋级 Skill 前的候选自查（只读，不阻断）")
     sp.add_argument("page")

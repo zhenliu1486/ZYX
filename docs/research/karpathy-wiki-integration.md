@@ -171,7 +171,7 @@
 | 决策点 | 定稿 |
 |---|---|
 | 路由形态 | **独立 R7 `wiki-vault`**，不并入 R3 |
-| 库落点 | 默认 `<桌面>/zyx-output/wiki/<slug>/`；**支持挂载已有 Obsidian 库目录**，只登记不重构，缺结构需同意后才补 |
+| 库落点 | 桌面宿主默认 `<桌面>/zyx-output/wiki/<slug>/`；豆包环境默认 `~/Doubao/wiki/<slug>/`（`ZYX_WIKI_HOME` 可覆盖）；**支持挂载已有 Obsidian 库目录**，只登记不重构，缺结构需同意后才补 |
 | 前端绑定 | **只做 Obsidian Markdown**（wikilink/frontmatter/callout），不内置插件配置、不产 HTML |
 | 覆盖度门槛 | **不设闸门**：lint 只出客观统计与建议，不判定「覆盖不足禁止下结论」 |
 | 并发 | **显式单写、禁止并行**；多会话写同一个活动库；锁为会话租约，陈旧可接管 |
@@ -188,3 +188,24 @@
 
 ### 已知边界（不阻塞上线）
 - `sync --pull/--push` 仍为预留（写接口需单独授权后实现）；R6 反馈联动目前靠既有原语（`new-page` + `backlink` + `log`）编排，未做成独立命令；库特别大时的搜索性能后续可接外部索引。
+
+## 11. 与豆包 personal agent 结合（2026-11-24）
+
+### 事实边界
+- 豆包技能是 Agent 的正式能力单元，PC 端「技能·连接器·伙伴 → 我的技能 → 上传技能」可拖入含 `SKILL.md` 的文件夹或压缩包；豆包工作另有可挂技能的「工作伙伴」。
+- 面向个人的「小豆」处于邀请制公测，主打主动服务、记忆与后台任务，**无公开 API**。
+- 因此不做私有接口对接，只做「技能 + 记忆 + 定时任务」三层适配。
+
+### 落地
+- **技能**：`scripts/package-doubao.sh` 打包（含 frontmatter 校验、排除 `state/`），产物 `dist/doubao/<skill>.zip`；上传路径写入 `references/personal-agent.md`。
+- **记忆**：`wiki.py where` 给出 `slug/root/topic` 作为稳定事实；`wiki.py brief` 输出 ≤600 字简报（规模/最近日志/热缓存，`--with-lint` 带巡检），会话开头读它而非整库。
+- **主动**：每周任务跑 `wiki-lint.py` + `brief --with-lint`，只推缺口与下一步；R7 不自动建任务，指令由用户确认后创建。
+- **落点**：豆包环境默认 `~/Doubao/wiki/<slug>`，与手机/PC 同一账号的会话共用；`ZYX_WIKI_HOME` 可覆盖。
+- **人设**：`docs/doubao/personal-agent-profile.md` 提供可粘贴的「知识库管家」指令、开场白与快捷指令。
+
+### 验证
+- `wiki-selftest.py` 34/34（新增 `where`、`brief`、`brief --with-lint`）。
+- 实测豆包环境默认建库落 `~/Doubao/wiki/briefdemo`，`where` 与 `brief` 输出正常，`brief --with-lint` 附带巡检统计。
+
+### 未做
+- 小豆私有能力、自动建任务、自动外发；`sync --push` 仍预留。
