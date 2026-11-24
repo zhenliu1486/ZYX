@@ -1,11 +1,12 @@
 {
   "schema_version": 1,
-  "zyx_version": "1.4.0",
+  "zyx_version": "1.4.1",
   "description": "ZYX 路由调度台的依赖声明清单。doctor / updater / install 脚本统一从本文件读取，不在脚本里硬编码依赖清单。",
   "host_dirs": [
     "$HOME/.claude/skills",
     "$HOME/.openclaw/skills",
     "$HOME/.agents/skills",
+    "$HOME/.codex/skills",
     "$HOME/.doubao/agent_mode/workspace/.user_skills",
     "$HOME/.gemini/skills",
     "$HOME/.kiro/skills",

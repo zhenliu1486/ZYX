@@ -12,17 +12,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=desktop-dir.sh
 source "$SCRIPT_DIR/desktop-dir.sh"
 
-# 来源 → 一级子目录名
-declare -A SOURCE_DIR=(
-  [nuwa]="nuwa"
-  [master]="master"
-  [cangjie]="cangjie"
-  [dbs]="dbs"
-  [video]="video"
-  [f2r]="f2r"
-  [wiki]="wiki"
-  [look]="look"
-)
+# 来源 → 一级子目录名（用 case 映射，兼容 macOS 自带 Bash 3.2，不用关联数组）
+source_subdir() {
+  case "$1" in
+    nuwa|master|cangjie|dbs|video|f2r|wiki|look) echo "$1" ;;
+    *) echo "" ;;
+  esac
+}
 
 SOURCE=""
 PRODUCT=""
@@ -46,8 +42,9 @@ if [ -z "$SOURCE" ] || [ -z "$PRODUCT" ]; then
   exit 1
 fi
 
-if [ -z "${SOURCE_DIR[$SOURCE]:-}" ]; then
-  echo "未知来源: $SOURCE（可选: ${!SOURCE_DIR[*]}）" >&2
+subdir="$(source_subdir "$SOURCE")"
+if [ -z "$subdir" ]; then
+  echo "未知来源: $SOURCE（可选: nuwa|master|cangjie|dbs|video|f2r|wiki|look）" >&2
   exit 1
 fi
 
@@ -58,7 +55,6 @@ if [ -z "$slug" ]; then
   exit 2
 fi
 
-subdir="${SOURCE_DIR[$SOURCE]}"
 if [ -n "$DATE_SUFFIX" ]; then slug="${slug}-${DATE_SUFFIX}"; fi
 
 root="$(resolve_desktop_dir)/zyx-output"

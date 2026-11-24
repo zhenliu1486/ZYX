@@ -5,7 +5,7 @@ license: MIT
 compatibility: 兼容 Claude Code / Codex / OpenClaw / Hermes / Kiro / Cline 等 Agent Skills 标准宿主；引用外部蒸馏器路径，需与它们同机安装。
 metadata:
   author: "ZYX"
-  version: "1.4.0"
+  version: "1.4.1"
   layer: "1-router"
   schema: "agentskills.io"
 allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch

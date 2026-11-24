@@ -22,6 +22,7 @@ ZYX/
 │   ├── research/            # 设计与决策记录
 │   └── promo/               # 对外素材
 ├── scripts/install.sh        # 一键安装（含内置技能）
+├── scripts/sync-hosts.sh     # 同步到本机所有已存在的宿主
 ├── scripts/package-doubao.sh # 打成豆包「上传技能」可用的 zip
 ├── .gitignore
 └── LICENSE
@@ -47,6 +48,9 @@ ZYX/
 
 ```bash
 bash scripts/install.sh --dir ~/.claude/skills
+
+# 或一次性同步到本机所有已存在的宿主目录（macOS 自带 Bash 3.2 也可用）
+bash scripts/sync-hosts.sh
 ```
 
 也可以手动复制：
@@ -56,7 +60,7 @@ cp -r skills/zyx ~/.claude/skills/zyx
 cp -r skills/video-studio ~/.claude/skills/video-studio
 ```
 
-其他宿主：`~/.openclaw/skills`、`~/.agents/skills`，或对应 Agent 的 skills 目录。
+其他宿主：`~/.openclaw/skills`、`~/.agents/skills`、`~/.codex/skills`，或对应 Agent 的 skills 目录。macOS 自带的 Bash 3.2 已做兼容；同步脚本见 `scripts/sync-hosts.sh`。
 
 依赖：Bash、git；仓颉本体另需 Python 3.10+ 与 PyYAML。首次调用 zyx 时会自动探测环境并注册后台周检（幂等）。
 
@@ -98,7 +102,7 @@ python3 skills/zyx/scripts/look.py deck.pptx --out ./look
 
 ## 版本
 
-当前 `zyx` v1.4.0，变更记录见 [skills/zyx/CHANGELOG.md](skills/zyx/CHANGELOG.md)。
+当前 `zyx` v1.4.1，变更记录见 [skills/zyx/CHANGELOG.md](skills/zyx/CHANGELOG.md)。
 
 ## 许可
 

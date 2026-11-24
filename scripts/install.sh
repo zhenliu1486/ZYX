@@ -39,8 +39,19 @@ if [ ! -d "$SKILLS_SRC" ]; then
   echo "找不到仓库 skills 目录: $SKILLS_SRC" >&2; exit 2
 fi
 
-# 候选宿主目录（展开 $HOME）
-mapfile -t HOST_DIRS < <(python3 "$DEPS_PY" host-dirs)
+# 候选宿主目录（展开 $HOME）；用 while 读取，兼容 macOS 自带 Bash 3.2
+HOST_DIRS=()
+host_idx=0
+while IFS= read -r d; do
+  [ -z "$d" ] && continue
+  HOST_DIRS[$host_idx]="$d"
+  host_idx=$((host_idx + 1))
+done < <(python3 "$DEPS_PY" host-dirs)
+
+if [ "${#HOST_DIRS[@]}" -eq 0 ]; then
+  echo "没有可用的宿主 skills 目录；请用 --dir 指定目标。" >&2
+  exit 1
+fi
 
 if [ "$LIST_HOSTS" -eq 1 ]; then
   echo "候选宿主 skills 目录："

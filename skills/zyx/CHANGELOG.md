@@ -2,6 +2,19 @@
 
 本文件记录 zyx 总调度台的版本变更。版本号遵循 SemVer（MAJOR.MINOR.PATCH）。
 
+## 1.4.1 — 2026-11-24
+
+### 修复
+- **macOS 自带 Bash 3.2 兼容**：`scripts/install.sh` 不再用 `mapfile`（改为 `while read` 收集数组）；`artifact-dir.sh` 不再用 `declare -A`（改为 `case` 映射）。此前在 macOS 默认 shell 会直接报错。
+- `deps/manifest.json` 的 `host_dirs` 补 `~/.codex/skills`，与 Context Card 的目标目录一致。
+
+### 新增
+- `scripts/sync-hosts.sh`：一条命令把内置 Skill 同步到本机所有已存在的宿主目录，复用 `install.sh` 并逐个自检；兼容 Bash 3.2。
+
+### 验证
+- Linux 上 `install.sh`、`sync-hosts.sh`（8 个宿主）、`doctor --full`、两个 selftest 均通过。
+- macOS 真机尚未接通（`SANDBOX_UNAVAILABLE`），Bash 3.2 兼容写法未在真机复跑；接入后应执行 `bash scripts/sync-hosts.sh` 复验。
+
 ## 1.4.0 — 2026-11-24
 
 ### 新增

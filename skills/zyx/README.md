@@ -24,6 +24,7 @@ bash scripts/install.sh --install-deps
 ```
 ZYX/
 ├── scripts/install.sh              # 一键安装器（识别宿主 → 复制内置 Skill → 自检）
+├── scripts/sync-hosts.sh           # 同步到本机所有已存在的宿主目录
 └── skills/
     ├── zyx/                        # 第 1 层：入口路由薄壳（本目录）
     │   ├── deps/manifest.json     #   依赖声明清单：来源/安装命令/必需可选/子技能归属
@@ -76,6 +77,9 @@ bash scripts/install.sh --install-deps
 
 # 只列出候选宿主目录
 bash scripts/install.sh --list-hosts
+
+# 同步到本机所有已存在的宿主目录（macOS 自带 Bash 3.2 兼容）
+bash scripts/sync-hosts.sh
 ```
 
 ### 方式二：手工复制
