@@ -1,6 +1,23 @@
-# zyx · 总调度台
+# ZYX · Agent Skill 总调度台（路由 / 蒸馏 / 内容生产聚合）
 
-> 一个薄壳路由入口 Skill：判断原料是「人 / 行业 / 长内容 / 当下问题 / 内容生产 / 产物迭代」，转发给对应的独立蒸馏器、dbs 家族或聚合层，统一收口产物。上游蒸馏器保持独立、各自追上游 git 更新；公共校验、质检、可信度、产物规范与 Darwin 式压测抽成 `shared/` 共享底座。
+> **ZYX 是什么**：一个兼容开放 Agent Skills 规范（agentskills.io）的**路由调度型 Skill**。接到任务后先判断属于「人 / 行业 / 长内容 / 当下问题 / 影视短剧漫剧生产 / 已有产物迭代」六类中的哪一类，再转发给对应的独立蒸馏器、dbs 家族或影视聚合层，最后按规范收口产物。上游蒸馏器保持独立、各自追上游 git 更新；公共校验、质检、可信度、产物规范与压测口径抽成 `shared/` 共享底座。
+
+**适用宿主**：Claude Code、Codex、OpenClaw、Cursor、Gemini CLI、OpenCode 等兼容 Agent Skills 标准的宿主；脚本依赖 Bash / git / curl，仓颉本体另需 Python 3.10+ 与 PyYAML。
+
+**一句话定位**：不是又一个通用编码路由，而是面向**方法论蒸馏 + 内容生产**的垂直调度台——把「像谁一样想 / 懂这行怎么做 / 提炼长内容方法 / 眼下这件事怎么判 / 怎么出片子 / 怎么按反馈迭代」六类请求，一次分流到正确的执行能力上。
+
+**快速安装**
+
+```bash
+git clone https://github.com/zhenliu1486/ZYX.git
+cd ZYX
+bash scripts/install.sh            # 自动选择宿主目录并自检
+# 可选：同时安装外部上游蒸馏器（女娲/大师/仓颉/dbs/达尔文）
+bash scripts/install.sh --install-deps
+# 或用 skills CLI：npx skills add zhenliu1486/ZYX
+```
+
+**关键词**：Agent Skill、skill 路由、skill dispatcher、agent 调度台、任务分流、方法论蒸馏、长内容提炼、行业 Master Skill、人物视角 Skill、短剧 / 漫剧 / 影视分镜、负反馈迭代、Claude Code skill、可复用工作流。
 
 ## 仓库布局
 
@@ -123,6 +140,37 @@ cp -r skills/zyx skills/video-studio ~/.doubao/agent_mode/workspace/.user_skills
 - 换机器或首次推送需重新完成 GitHub 登录（`gh auth login` 或 `gh auth login --with-token <token>`）；旧版 gh 凭证助手不吐账号时，用带 `repo` 权限的 PAT 走 token 方式。
 - 发布前按 `shared/quality/qa-audit.md` 脱敏：不提交密钥、内部路径、本机配置、未脱敏样本与运行记录。
 
+## 与通用编码路由 Skill 的区别
+
+| 维度 | 通用编码 / 任务路由 Skill | ZYX 调度台 |
+|---|---|---|
+| 目标任务 | 代码、通用多步任务的子 Agent 分派 | 方法论蒸馏 + 内容生产六类请求分流 |
+| 路由对象 | 子 Agent 类型（Explore / Plan / Researcher 等） | 独立蒸馏器、影视聚合层、R5 子技能、R6 迭代器 |
+| 依赖管理 | 多靠提示词判断，缺依赖时提示 | 声明式 `manifest.json` 清单 + 一键安装器 + 逐项自检 |
+| 产物收口 | 较少涉及 | 规范目录 / 命名 / 脱敏 / 统一回传清单 |
+| 更新闭环 | 通常无 | 后台周检、版本号 + HEAD SHA 比对、失败计数与 drift 报告 |
+| 共享底座 | 各自重复实现 | 校验 / 质检 / 可信度 / 产物规范 / 压测口径抽成一份 shared |
+
+## 常见问题（FAQ）
+
+**Q：ZYX 自己会蒸馏方法论、写剧本吗？**
+不会。ZYX 是薄壳路由入口，只判断类型、转发委派、收口产物；方法论分别驻留在对应蒸馏器与子技能里，ZYX 不复制、不内嵌其内部文件。
+
+**Q：装好 ZYX 就能直接出蒸馏产物 / 影视脚本吗？**
+R5 影视七子技能与 R6 迭代器随仓库内置；R1–R4 上游蒸馏器（女娲 / 大师 / 仓颉 / dbs）是外部依赖，用 `bash scripts/install.sh --install-deps` 或按 `deps/manifest.json` 单独安装；可选达尔文压测底座同理。
+
+**Q：支持哪些 Agent 宿主？**
+兼容开放 Agent Skills 规范的宿主：Claude Code、Codex、OpenClaw、Cursor、Gemini CLI、OpenCode 等；探测目录见 `deps/manifest.json`，可用 `ZYX_EXTRA_SKILL_DIRS` 追加。
+
+**Q：产物和隐私怎么处理？**
+产物默认只落本机桌面 `zyx-output/`，不自动推送远端；发布前强制过脱敏清单，手机号 / 身份证 / 内部账号 / 未公开客户名等一律占位符替代。
+
+**Q：怎么更新 ZYX 和上游依赖？**
+后台周检自动快进 git 上游（有手改或分叉不强行覆盖）；手动跑 `bash scripts/check-updates.sh` 看 drift 报告；ZYX 自身版本落后时提示人工确认，不自动覆盖运行中的 Skill。
+
+**Q：开源协议？**
+MIT，可自由使用、修改与再分发。
+
 ## 设计原则
 
 - **入口只做路由与收口**：zyx 不调研、不提炼方法论、不复制蒸馏器内部文件。
@@ -137,3 +185,7 @@ cp -r skills/zyx skills/video-studio ~/.doubao/agent_mode/workspace/.user_skills
 ## 许可
 
 MIT，见 [LICENSE](LICENSE)。变更记录见 [CHANGELOG.md](CHANGELOG.md)。
+
+## 分享与推广素材
+
+对外口径、各平台成稿与渠道跟踪清单见 [`docs/promo/`](../../docs/promo/)：`marketing-kit.md`（事实口径与话术）、`article-technical.md`（技术长文）、`xiaohongshu-note.md`（图文笔记）、`short-video-script.md`（短视频口播）、`channel-checklist.md`（渠道执行跟踪）。
