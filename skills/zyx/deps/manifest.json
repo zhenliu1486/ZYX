@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "zyx_version": "1.1.0",
+  "zyx_version": "1.2.0",
   "description": "ZYX 路由调度台的依赖声明清单。doctor / updater / install 脚本统一从本文件读取，不在脚本里硬编码依赖清单。",
   "host_dirs": [
     "$HOME/.claude/skills",
@@ -156,6 +156,17 @@
       "url": null,
       "install": "随 ZYX 仓库内置，安装器自动复制",
       "notes": "负反馈显性化为规则、小样本迭代 + 回归测试。"
+    },
+    {
+      "id": "R7",
+      "route": "长期知识库（个人/领域 Wiki）",
+      "dir": "wiki-vault",
+      "source": "bundled",
+      "required": false,
+      "parent": null,
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "raw/ 只读 → wiki/ 编译的长期知识库；支持挂载已有 Obsidian 库；单写锁禁并行；lint 巡检；git 同步接口预留。"
     },
     {
       "id": "DARWIN",

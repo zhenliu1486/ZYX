@@ -6,9 +6,9 @@
 ## 1. 事实口径卡（所有渠道统一引用）
 
 - **名称**：ZYX（Agent Skill 总调度台 / 路由调度型 Skill）
-- **一句话定义**：一个兼容开放 Agent Skills 规范的路由调度台，把「人 / 行业 / 长内容 / 当下问题 / 影视短剧漫剧生产 / 已有产物迭代」六类请求，分流到对应的独立蒸馏器、dbs 家族或影视聚合层，再按规范收口产物。
+- **一句话定义**：一个兼容开放 Agent Skills 规范的路由调度台，把「人 / 行业 / 长内容 / 当下问题 / 影视短剧漫剧生产 / 已有产物迭代 / 长期知识库」七类请求，分流到对应的独立蒸馏器、dbs 家族或影视聚合层，再按规范收口产物。
 - **它不是什么**：不是通用编码子 Agent 分派器；自己不写方法论、不复制蒸馏器内部文件。
-- **仓库结构**：`skills/` 下 10 个 Skill，每个含独立 `SKILL.md`：
+- **仓库结构**：`skills/` 下 11 个 Skill，每个含独立 `SKILL.md`：
   - `zyx`：路由壳 + shared 共享底座（增量校验、三重验证、质检审计、可信度分级、产物规范、压测口径）
   - `video-studio`：影视/短剧/漫剧制作聚合层
   - `screenplay-development`：剧本开发与结构
@@ -19,7 +19,8 @@
   - `micro-expression-video`：微表情参数
   - `manju-production-pipeline`：全流程生产 SOP
   - `f2r-feedback-iteration`：负反馈转规则迭代器
-- **六条路由**：R1 人物蒸馏（女娲）｜R2 行业蒸馏（大师）｜R3 长内容提炼（仓颉）｜R4 当下问题（dbs）｜R5 影视生产（video-studio）｜R6 产物迭代（f2r）。
+  - `wiki-vault`：长期知识库（raw/ 只读 → wiki/ 编译；可挂载 Obsidian 库；单写锁 + lint 巡检）
+- **六条路由**：R1 人物蒸馏（女娲）｜R2 行业蒸馏（大师）｜R3 长内容提炼（仓颉）｜R4 当下问题（dbs）｜R5 影视生产（video-studio）｜R6 产物迭代（f2r）｜R7 长期知识库（wiki-vault，内置）。
 - **工程能力**：声明式依赖清单 `deps/manifest.json`、一键安装器 `scripts/install.sh`、自检 `doctor.sh`、悬空引用完整性扫描、回归用例、后台周检与版本/SHA 比对。
 - **兼容宿主**：Claude Code、Codex、OpenClaw、Cursor、Gemini CLI、OpenCode 等兼容 Agent Skills 标准的宿主。
 - **安装命令**：
@@ -33,13 +34,13 @@
 ## 2. 话术梯度（按场景选用）
 
 ### 一句话（标题/简介/标签行）
-> ZYX：给 AI Agent 用的内容生产与方法论蒸馏调度台，六类请求一次分流到正确能力。
+> ZYX：给 AI Agent 用的内容生产与方法论蒸馏调度台，七类请求一次分流到正确能力。
 
 ### 三句话（社群/简介区）
 > ZYX 是一个开源的 Agent Skill 路由调度台。它先判断你要的是「像谁一样想、懂这行怎么做、提炼长内容方法、眼下这件事怎么判、怎么出片子、还是按反馈改一版」，再转发给对应执行能力，最后按统一规范收口产物。内置影视生产七子技能和负反馈迭代器，带依赖清单、一键安装和自检回归。
 
 ### 30 秒电梯演讲
-> 现在很多人装了一堆 Skill，但 Agent 经常忘了用、或者把活派错地方。ZYX 解决的是「路由」这一层：它是个薄壳调度入口，把任务分成六类——人物、行业、长内容、当下问题、影视生产、产物迭代——分别转给对应的蒸馏器或聚合层，自己不抢方法论的活。它把校验、质检、可信度、产物规范这些重复部分抽成一份共享底座，依赖用清单声明，一条命令装好，还带自检和回归用例。仓库开源 MIT，Claude Code、Codex、OpenClaw、Cursor 这些兼容宿主都能用。
+> 现在很多人装了一堆 Skill，但 Agent 经常忘了用、或者把活派错地方。ZYX 解决的是「路由」这一层：它是个薄壳调度入口，把任务分成七类——人物、行业、长内容、当下问题、影视生产、产物迭代、长期知识库——分别转给对应的蒸馏器或聚合层，自己不抢方法论的活。它把校验、质检、可信度、产物规范这些重复部分抽成一份共享底座，依赖用清单声明，一条命令装好，还带自检和回归用例。仓库开源 MIT，Claude Code、Codex、OpenClaw、Cursor 这些兼容宿主都能用。
 
 ### 1 分钟版本
 见 `article-technical.md` 的正文骨架，可直接扩写成长文或口播。
@@ -67,7 +68,7 @@
 | GitHub 仓库元数据 | 更新描述、11 个 topics | ✅ 已完成 |
 | GitHub README | GEO 结构：实体定义、关键词、快速安装、对比表、FAQ | ✅ 已完成 |
 | skills.sh 索引 | 向 `vercel-labs/skills` 提交索引申请 issue | ✅ [#2833](https://github.com/vercel-labs/skills/issues/2833) |
-| 安装链路验证 | `npx skills add zhenliu1486/ZYX` 识别出 10 个 skill | ✅ 已验证 |
+| 安装链路验证 | `npx skills add zhenliu1486/ZYX` 识别出 11 个 skill | ✅ 已验证 |
 
 ### 4.2 需 Web 登录提交（备好条目，登录后粘贴）
 | 渠道 | 提交方式 | 条目/要点 |
@@ -96,7 +97,7 @@
 ### awesome 榜单表格行（`| Skill | Description | Source |` 格式）
 
 ```markdown
-| [ZYX](https://github.com/zhenliu1486/ZYX) | Agent Skill 路由调度台：把人物/行业/长内容/当下问题/影视生产/产物迭代六类请求分流到对应蒸馏器与聚合层，内置影视七子技能与负反馈迭代器，附依赖清单、一键安装与自检回归 | [zhenliu1486/ZYX](https://github.com/zhenliu1486/ZYX) |
+| [ZYX](https://github.com/zhenliu1486/ZYX) | Agent Skill 路由调度台：把人物/行业/长内容/当下问题/影视生产/产物迭代/长期知识库七类请求分流到对应蒸馏器与聚合层，内置影视七子技能与负反馈迭代器，附依赖清单、一键安装与自检回归 | [zhenliu1486/ZYX](https://github.com/zhenliu1486/ZYX) |
 ```
 
 ### skills.sh / 注册表提交信息

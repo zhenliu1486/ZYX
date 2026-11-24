@@ -19,6 +19,7 @@
 | dbs 家族 | `dbs/` | `~/Desktop/zyx-output/dbs/2026-11-23-生意诊断/` |
 | 内容生产 video-studio | `video/` | `~/Desktop/zyx-output/video/武侠打斗分镜/` |
 | 产物迭代 f2r | `f2r/` | `~/Desktop/zyx-output/f2r/文案v2-20261124/` |
+| 知识库 wiki-vault | `wiki/` | `~/Desktop/zyx-output/wiki/ai-research/`（库根，内含 raw/ 与 wiki/） |
 
 ## 2. 目录内部结构
 
@@ -47,7 +48,7 @@ bash ../scripts/artifact-dir.sh video "武侠打斗分镜" --create
 bash ../scripts/artifact-dir.sh nuwa "芒格视角" --date 20261124
 ```
 
-- 来源白名单：`nuwa master cangjie dbs video f2r`；非法来源报错退出 1。
+- 来源白名单：`nuwa master cangjie dbs video f2r wiki`；非法来源报错退出 1。
 - 产物名做 slug 化（去特殊字符、空格转 `-`）；未传日期时不带日期后缀。
 - 桌面根目录由 `../scripts/desktop-dir.sh` 按第 1 节回退顺序探测，脚本不写死宿主路径。
 

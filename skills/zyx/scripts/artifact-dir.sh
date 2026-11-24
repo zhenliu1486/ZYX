@@ -2,7 +2,7 @@
 # artifact-dir.sh — 按规范创建产物目录并返回规范路径。
 # 规则：产物根/<来源 Skill 子目录>/<产物 slug>[-日期后缀]/
 # 用法:
-#   bash artifact-dir.sh <来源: nuwa|master|cangjie|dbs|video|f2r> <产物名> [--date YYYYMMDD] [--create]
+#   bash artifact-dir.sh <来源: nuwa|master|cangjie|dbs|video|f2r|wiki> <产物名> [--date YYYYMMDD] [--create]
 # 不加 --create 只返回规范路径；--create 才创建目录。
 # 退出码: 0 成功；1 参数错误；2 命名不合法。
 
@@ -20,6 +20,7 @@ declare -A SOURCE_DIR=(
   [dbs]="dbs"
   [video]="video"
   [f2r]="f2r"
+  [wiki]="wiki"
 )
 
 SOURCE=""
@@ -40,7 +41,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "$SOURCE" ] || [ -z "$PRODUCT" ]; then
-  echo "用法: artifact-dir.sh <来源: nuwa|master|cangjie|dbs|video|f2r> <产物名> [--date YYYYMMDD] [--create]" >&2
+  echo "用法: artifact-dir.sh <来源: nuwa|master|cangjie|dbs|video|f2r|wiki> <产物名> [--date YYYYMMDD] [--create]" >&2
   exit 1
 fi
 

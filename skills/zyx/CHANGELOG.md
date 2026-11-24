@@ -2,6 +2,23 @@
 
 本文件记录 zyx 总调度台的版本变更。版本号遵循 SemVer（MAJOR.MINOR.PATCH）。
 
+## 1.2.0 — 2026-11-24
+
+### 新增
+- **R7 长期知识库路由** `wiki-vault`（随仓库内置）：借鉴 Karpathy LLM Wiki 模式，`raw/` 只读原料层 → `wiki/` 增量编译成互为链接的 Obsidian Markdown（摘要/实体/概念/对比/综述页），维护主索引、活动日志、会话热缓存与全库综述；承接建库、摄入编译、库内问答、健康巡检四类操作。
+- **挂载已有 Obsidian 库**：`wiki.py mount <slug> <路径>` 只登记路径并检测结构，不搬动、不重命名、不重构用户既有目录；缺结构默认不写，用户同意后才 `--provision` 补缺失骨架；知识放别的目录名时可用 `--wiki-dir` / `--raw-dir` 指向既有目录。
+- **单写锁与禁并行**：写操作前必须 `lock`，脚本对未持锁写入（退出码 5）与他人持锁（退出码 3）直接拒绝；锁为会话租约（`WIKI_SESSION_ID` 区分会话），默认 12 小时视为陈旧，可 `--force` 接管。
+- **健康巡检** `wiki-lint.py`：扫描断链、缺页（被提及 ≥3 次却无独立页）、孤儿页、仅索引引用、frontmatter 问题、索引覆盖、废弃页仍被引用、陈旧页、过薄页与矛盾标记；只读、退出码恒 0。
+- **库注册表** `state/vaults.json` 与活动库切换 `use`：多会话统一写同一个库；运行态不进发布包、不污染 Obsidian 图谱。
+- **回归用例** E11–E14：R7 路由判别（vs R3/R1/R2）、挂载不重构、单写并发拒绝、巡检不设覆盖度闸门。
+
+### 变更
+- zyx 路由从六类扩为七类；路由表、产物布局（`wiki/<slug>/`）、`artifact-dir.sh`（白名单加 `wiki`）、`route.sh`（`wiki` 分支）、doctor 自检（知识库段）同步更新。
+- README 补 R7 定位、布局、调用示例与 FAQ；研究方案 `docs/research/karpathy-wiki-integration.md` 记录决策。
+
+### 预留（未实现）
+- **知识库 git 同步接口**：契约见 `skills/wiki-vault/references/sync-interface.md`；只同步 `wiki/`、`schema.md`，不同步 `raw/`；默认 dry-run、冲突不自动合并、推送前强制脱敏与单独授权。当前 `wiki.py sync` 只返回「未实现」提示，不产生任何远端动作。
+
 ## 1.1.0 — 2026-11-24
 
 ### 新增

@@ -8,7 +8,7 @@
 - [x] ✅ GitHub topics：agent-skills / claude-code / skill-router / agent-router / workflow-orchestration / content-production / ai-agents / skills-sh / openagent-skills / video-production / skill-dispatcher
 - [x] ✅ README GEO 重构：实体定义、适用宿主、快速安装、关键词、对比表、FAQ
 - [x] ✅ skills.sh 索引申请 issue：https://github.com/vercel-labs/skills/issues/2833
-- [x] ✅ 安装链路验证：`npx skills add zhenliu1486/ZYX` 识别 10 个 skill
+- [x] ✅ 安装链路验证：`npx skills add zhenliu1486/ZYX` 识别 11 个 skill
 - [x] ✅ 宣传素材包与各平台成稿（见 `docs/promo/`）
 
 ## 二、待登录提交（需在 Web 端操作）

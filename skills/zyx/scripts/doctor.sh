@@ -130,6 +130,31 @@ else
 fi
 echo
 
+echo "## 8. 知识库（R7）"
+WV="$(find_local wiki-vault || true)"; [ -n "$WV" ] && WV="$(cd "$WV" && pwd)"
+if [ -n "$WV" ] && [ -f "$WV/scripts/wiki.py" ]; then
+  n="$(python3 "$WV/scripts/wiki.py" list --plain 2>/dev/null | grep -c . || true)"
+  echo "  ✅ wiki-vault 可用 → $WV"
+  echo "  ℹ 已注册库: ${n:-0} 个；注册表: $ZYX_DIR/state/vaults.json"
+  if [ -f "$ZYX_DIR/state/vaults.json" ]; then
+    python3 - "$ZYX_DIR/state/vaults.json" <<'PYW'
+import json, sys
+try:
+    d = json.load(open(sys.argv[1], encoding="utf-8"))
+    for v in d.get("vaults", []):
+        mark = "*" if v.get("slug") == d.get("active") else " "
+        ready = "就绪" if v.get("layout_ready") else "未对齐"
+        print(f"    {mark} {v.get('slug')} [{ready}] {v.get('root')}")
+except Exception:
+    print("    ⚠ 注册表损坏，可删除后重新 init/mount。")
+PYW
+  fi
+else
+  echo "  ⚠ 未检测到 wiki-vault（R7 可选；随仓库内置，重装 install.sh 可补）"
+  warn=1
+fi
+echo
+
 echo "## 结论"
 if [ "$fail" -eq 1 ]; then
   echo "存在必须补齐的缺失项（见 ❌），补齐后重跑 doctor。"

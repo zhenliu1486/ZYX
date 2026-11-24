@@ -1,11 +1,11 @@
 ---
 name: zyx
-description: zyx 总调度台（薄壳路由入口）。当用户要把人、行业、长内容（书/长视频/播客/课程/访谈）蒸馏成 Skill，处理当下商业/文案/决策问题，做影视/短剧/漫剧内容生产，或对已有产物二次迭代时使用。只判断原料属于哪一类并转发给对应蒸馏器/聚合层，不自行产出方法论；产物按生成它的 Skill 名分目录落盘后统一回传。生产类触发词：zyx、调度、路由、造 skill、蒸馏、拆书、做个 X 的 master、我是 X 行业、诊断我的生意、这篇文案行不行、写短剧剧本、出分镜、改这版产物。
+description: zyx 总调度台（薄壳路由入口）。当用户要把人、行业、长内容（书/长视频/播客/课程/访谈）蒸馏成 Skill，处理当下商业/文案/决策问题，做影视/短剧/漫剧内容生产，对已有产物二次迭代，或维护一个长期累积的个人/领域知识库时使用。只判断原料属于哪一类并转发给对应蒸馏器/聚合层，不自行产出方法论；产物按生成它的 Skill 名分目录落盘后统一回传。生产类触发词：zyx、调度、路由、造 skill、蒸馏、拆书、做个 X 的 master、我是 X 行业、诊断我的生意、这篇文案行不行、写短剧剧本、出分镜、改这版产物、建个知识库、把这篇加进我的库、我库里关于 X、体检我的库。
 license: MIT
 compatibility: 兼容 Claude Code / Codex / OpenClaw / Hermes / Kiro / Cline 等 Agent Skills 标准宿主；引用外部蒸馏器路径，需与它们同机安装。
 metadata:
   author: "ZYX"
-  version: "1.1.0"
+  version: "1.2.0"
   layer: "1-router"
   schema: "agentskills.io"
 allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
@@ -21,7 +21,7 @@ allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
 zyx/                                  # 第 1 层：入口路由（本目录，薄壳）
 ├── SKILL.md                          #   判断原料类型 → 转发 → 收口产物
 ├── references/
-│   ├── routing-table.md               #   六类原料的判定信号与分流规则
+│   ├── routing-table.md               #   七类原料的判定信号与分流规则
 │   └── artifact-layout.md            #   产物目录命名与回传规范（与 shared/artifacts 对齐）
 ├── deps/
 │   └── manifest.json                 #   依赖声明清单（来源/安装命令/必需可选/子技能归属），doctor/updater/install 共用
@@ -57,6 +57,7 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 | R4 | dbs 家族 | dontbesilent2025/dbskill | 处理**当下问题**：商业诊断、文案、决策复盘、协作派单（不产出新 Skill） |
 | R5 | `video-studio` 聚合层 | 随仓库内置（子技能随仓库内置） | **影视/短剧/漫剧内容生产**：内部路由剧本、编剧、人物、场景、动作分镜、表情参数、全流程 SOP |
 | R6 | `f2r-feedback-iteration` | 随仓库内置 | **已有产物二次迭代**：按反馈显性化为规则，小样本迭代 + 回归测试 |
+| R7 | `wiki-vault` | 随仓库内置 | **长期知识库（个人/领域 Wiki）**：`raw/` 只读原料 → `wiki/` 编译成互链 Obsidian Markdown；支持挂载已有 Obsidian 库；单写锁 + lint 巡检 |
 | 可选 | `darwin-skill` | alchaincyf/darwin-skill | Darwin 式压测本体；`shared/darwin/` 只引用口径，不内嵌本体 |
 
 > 依赖的来源、安装命令、必需/可选与子技能归属，统一登记在 `deps/manifest.json`；新增或调整依赖只改这一份清单。
@@ -70,7 +71,7 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 - 注册动作只写本机调度配置，不访问远端、不推送内容；调度器不可用时不中断主流程，只记录降级提示。
 
 ### Step 1 · 读取原料，判定类型
-先读用户原话、附件和对话已有事实，不要求用户重复背景。按 `references/routing-table.md` 的判定信号，把原料归入六类之一（R1 人 / R2 行业 / R3 长内容 / R4 当下问题 / R5 内容生产 / R6 产物迭代）；信号冲突或模糊时，**一次问清**属于哪类，不要猜着分流。
+先读用户原话、附件和对话已有事实，不要求用户重复背景。按 `references/routing-table.md` 的判定信号，把原料归入七类之一（R1 人 / R2 行业 / R3 长内容 / R4 当下问题 / R5 内容生产 / R6 产物迭代 / R7 长期知识库）；信号冲突或模糊时，**一次问清**属于哪类，不要猜着分流。
 
 ### Step 2 · 解析目标蒸馏器的绝对路径
 按 `references/routing-table.md` 末尾的「路径解析」找到对应蒸馏器在本机的安装目录。路径解析顺序：环境变量覆盖 → 本机各宿主 skill 目录探测 → 报错并提示安装。**禁止把蒸馏器方法论复制进 zyx 目录**，zyx 只引用路径。
@@ -82,6 +83,7 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 - **R3 仓颉**：长内容需先有文字稿/字幕转写；**无文字稿时先走 `dbs-video-extract` 或本地转写**，拿到文字稿后再进 RIA-TV++ 流水线，压测兼容达尔文（见 `shared/darwin/`）。
 - **R4 dbs**：当下问题，按 dbs 主调度台路由到具体子 skill；dbs 不生成可安装 Skill。
 - **R5 video-studio**：影视/短剧/漫剧制作，先到聚合层，由其内部路由到剧本/编剧/人物/场景/动作/表情/全流程对应子技能。
+- **R7 wiki-vault**：长期知识库建库/摄入编译/库内问答/巡检。已有 Obsidian 库用 `mount` 挂载、不重构；写操作先取单写锁，未持锁脚本拒绝；不设覆盖度闸门；库内页晋级成 Skill 需过三重验证 + 具备独立复用价值。
 - **R6 f2r**：已有产物（Skill / MD 文档）二次修改迭代，指向 f2r 负反馈迭代；需要诊断共鸣断点联动 dbs-resonate，查 AI 味联动 dbs-ai-check。
 
 ### Step 4 · 套用共享底座（第 3 层）
@@ -93,7 +95,7 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 - 产物规范与压测：目录结构、命名、Darwin 式用例（`shared/artifacts/`、`shared/darwin/`）。
 
 ### Step 5 · 收口产物并回传桌面
-产物先落到本机桌面产物根目录，**按生成它的 Skill 名分一级子目录**（规则见 `references/artifact-layout.md` 与 `shared/artifacts/convention.md`）。全部产物就位后，zyx 统一汇总路径清单回传给用户：每个产物标注来源蒸馏器、版本、校验状态与所在目录。回传前按 `shared/quality/qa-audit.md` 做一次交付前核对。
+产物先落到本机桌面产物根目录，**按生成它的 Skill 名分一级子目录**（知识库落 `wiki/<slug>/`，库内自带 raw/ 与 wiki/）（规则见 `references/artifact-layout.md` 与 `shared/artifacts/convention.md`）。全部产物就位后，zyx 统一汇总路径清单回传给用户：每个产物标注来源蒸馏器、版本、校验状态与所在目录。回传前按 `shared/quality/qa-audit.md` 做一次交付前核对。
 
 ## 3. 边界（zyx 不做什么）
 
@@ -101,6 +103,7 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 - 不复制、不内嵌、不改写三个蒸馏器的内部文件；它们独立追上游更新。
 - 不做无确认的远端动作（建仓、push、tag、Release 单独授权，见 `references/routing-table.md` 发布段）。
 - 不把书摘、读后感、作者人设扮演交给仓颉（那是女娲的活）；路由表已写明边界。
+- 知识库层不写 HTML、不装 Obsidian 插件、不改用户既有 Obsidian 库结构；同步接口仅预留。
 
 ## 4. 后台静默更新机制
 

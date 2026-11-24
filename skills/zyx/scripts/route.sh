@@ -12,11 +12,13 @@ source "$SCRIPT_DIR/lib-common.sh"
 TARGET="${1:-}"
 
 resolve() { # $1=目录名  $2=环境变量名
-  local dir="$1" envvar="$2"
+  local dir="$1" envvar="$2" p=""
   if [ -n "${!envvar:-}" ] && [ -f "${!envvar}/SKILL.md" ]; then
-    echo "${!envvar}"; return 0
+    p="${!envvar}"
+  else
+    p="$(find_local "$dir")" || return 1
   fi
-  find_local "$dir"
+  (cd "$p" && pwd)
 }
 
 case "$TARGET" in
@@ -46,14 +48,19 @@ case "$TARGET" in
     echo "路由 → R6 f2r-feedback-iteration（已有产物二次迭代：负反馈显性化 + 小样本回归）"
     resolve f2r-feedback-iteration F2R_SKILL_DIR || echo "未检测到 f2r-feedback-iteration"
     ;;
+  wiki)
+    echo "路由 → R7 wiki-vault 长期知识库（建库/摄入编译/库内问答/健康巡检；可挂载已有 Obsidian 库）"
+    resolve wiki-vault WIKI_VAULT_DIR || echo "未检测到 wiki-vault"
+    ;;
   *)
-    echo "用法: route.sh <person|industry|content|problem|production|iterate>"
+    echo "用法: route.sh <person|industry|content|problem|production|iterate|wiki>"
     echo "  person     人     → 女娲"
     echo "  industry   行业   → 大师"
     echo "  content    长内容 → 仓颉"
     echo "  problem    问题   → dbs"
     echo "  production 内容生产 → video-studio"
     echo "  iterate    产物迭代 → f2r"
+    echo "  wiki       长期知识库 → wiki-vault"
     exit 1
     ;;
 esac
