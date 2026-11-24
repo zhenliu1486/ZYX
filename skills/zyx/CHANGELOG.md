@@ -10,14 +10,19 @@
 - **单写锁与禁并行**：写操作前必须 `lock`，脚本对未持锁写入（退出码 5）与他人持锁（退出码 3）直接拒绝；锁为会话租约（`WIKI_SESSION_ID` 区分会话），默认 12 小时视为陈旧，可 `--force` 接管。
 - **健康巡检** `wiki-lint.py`：扫描断链、缺页（被提及 ≥3 次却无独立页）、孤儿页、仅索引引用、frontmatter 问题、索引覆盖、废弃页仍被引用、陈旧页、过薄页与矛盾标记；只读、退出码恒 0。
 - **库注册表** `state/vaults.json` 与活动库切换 `use`：多会话统一写同一个库；运行态不进发布包、不污染 Obsidian 图谱。
-- **回归用例** E11–E14：R7 路由判别（vs R3/R1/R2）、挂载不重构、单写并发拒绝、巡检不设覆盖度闸门。
+- **检索与归档闭环**：`wiki.py search` 库内全文检索（可按类型过滤）、`backlink` 幂等回链、`new-page --link-to/--backlink` 建页即互链、`archive` 把问答结果归档为对比/综述页并自动回链与写日志。
+- **晋级自查** `promote-check`：只读检查来源/可信度/关联/可执行步骤/边界五项，作为交 R3 前的候选筛查，不阻断流程。
+- **lint 增强**：补按类型必填字段（source_file/date_ingested/entity_type/confidence/cluster/date）、目录与 type 一致性、活动日志格式检查；新增可选 `--exit-code` 供批处理，默认仍恒 0。
+- **可选模板** `assets/templates/`：五类页面模板（纯 Markdown，不内置插件配置）。
+- **端到端自测** `scripts/wiki-selftest.py`：31 项覆盖建库/锁/并发/重复/回链/归档/检索/lint/挂载/sync；`doctor.sh --full` 自动调用。
+- **回归用例** E11–E16：R7 路由判别（vs R3/R1/R2）、挂载不重构、单写并发拒绝、巡检不设覆盖度闸门、检索归档、晋级自查。
 
 ### 变更
 - zyx 路由从六类扩为七类；路由表、产物布局（`wiki/<slug>/`）、`artifact-dir.sh`（白名单加 `wiki`）、`route.sh`（`wiki` 分支）、doctor 自检（知识库段）同步更新。
 - README 补 R7 定位、布局、调用示例与 FAQ；研究方案 `docs/research/karpathy-wiki-integration.md` 记录决策。
 
 ### 预留（未实现）
-- **知识库 git 同步接口**：契约见 `skills/wiki-vault/references/sync-interface.md`；只同步 `wiki/`、`schema.md`，不同步 `raw/`；默认 dry-run、冲突不自动合并、推送前强制脱敏与单独授权。当前 `wiki.py sync` 只返回「未实现」提示，不产生任何远端动作。
+- **知识库 git 同步写接口**：契约见 `skills/wiki-vault/references/sync-interface.md`；只同步 `wiki/`、`schema.md`，不同步 `raw/`；默认 dry-run、冲突不自动合并、推送前强制脱敏与单独授权。`sync --status` 已实现为只读本地检查；`--pull` / `--push` 仍返回「未实现」（退出码 2），不产生任何远端动作。
 
 ## 1.1.0 — 2026-11-24
 

@@ -6,6 +6,7 @@
 #
 # 选项:
 #   --online   额外做上游网络可达性检查（默认离线，避免自检被网络拖慢）。
+#   --full     额外跑 R7 知识库端到端自测（会创建并清理临时库，不碰真实库）。
 
 set -uo pipefail
 
@@ -15,9 +16,11 @@ ZYX_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$SCRIPT_DIR/lib-common.sh"
 
 ONLINE=0
+FULL=0
 for arg in "$@"; do
   case "$arg" in
     --online) ONLINE=1 ;;
+    --full) FULL=1 ;;
   esac
 done
 
@@ -152,6 +155,11 @@ PYW
 else
   echo "  ⚠ 未检测到 wiki-vault（R7 可选；随仓库内置，重装 install.sh 可补）"
   warn=1
+fi
+if [ "$FULL" -eq 1 ] && [ -n "$WV" ] && [ -f "$WV/scripts/wiki-selftest.py" ]; then
+  echo
+  echo "  ## R7 端到端自测（--full）"
+  python3 "$WV/scripts/wiki-selftest.py" || { echo "  ❌ R7 自测存在失败项"; warn=1; }
 fi
 echo
 

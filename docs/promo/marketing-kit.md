@@ -22,6 +22,7 @@
   - `wiki-vault`：长期知识库（raw/ 只读 → wiki/ 编译；可挂载 Obsidian 库；单写锁 + lint 巡检）
 - **六条路由**：R1 人物蒸馏（女娲）｜R2 行业蒸馏（大师）｜R3 长内容提炼（仓颉）｜R4 当下问题（dbs）｜R5 影视生产（video-studio）｜R6 产物迭代（f2r）｜R7 长期知识库（wiki-vault，内置）。
 - **工程能力**：声明式依赖清单 `deps/manifest.json`、一键安装器 `scripts/install.sh`、自检 `doctor.sh`、悬空引用完整性扫描、回归用例、后台周检与版本/SHA 比对。
+- **R7 知识库**：`raw/` 只读 → `wiki/` 编译；可挂载已有 Obsidian 库；单写锁禁并行；`lint` 巡检 + `search` 检索 + `archive` 归档回链 + `promote-check` 晋级自查；同步写接口预留。
 - **兼容宿主**：Claude Code、Codex、OpenClaw、Cursor、Gemini CLI、OpenCode 等兼容 Agent Skills 标准的宿主。
 - **安装命令**：
   ```bash

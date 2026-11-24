@@ -1,6 +1,6 @@
 # 同步接口（预留，未实现）
 
-> 状态：**契约设计，未启用**。当前库只落本机，不自动访问远端、不自动 push。启用前必须单独授权。
+> 状态：**`--status` 已实现（只读本地 git 信息）；`--pull` / `--push` 仍为契约设计、未启用。当前库不自动访问远端、不自动 push。写接口启用前必须单独授权。
 
 ## 1. 设计目标
 
@@ -13,7 +13,7 @@
 ## 2. 计划中的子命令（占位，当前返回「未实现」）
 
 ```bash
-python3 scripts/wiki.py sync --status        # 只读：本地改动、领先/落后、冲突预检
+python3 scripts/wiki.py sync --status        # 已实现：分支/未提交改动/领先落后/远端（不联网）
 python3 scripts/wiki.py sync --pull          # 拉取（ff-only，冲突则停）
 python3 scripts/wiki.py sync --push --dry-run # 默认；只报告将提交什么
 python3 scripts/wiki.py sync --push          # 需显式确认 + 远端授权
@@ -41,5 +41,6 @@ python3 scripts/wiki.py sync --push          # 需显式确认 + 远端授权
 
 ## 5. 当前行为
 
-- 调用 `wiki.py sync` 会明确返回「预留接口，未实现」并退出非零，不产生任何远端动作。
+- `sync --status`：只读本地 git 元信息（分支、未提交改动、领先/落后、远端 URL），不联网、不写；非 git 库直接提示未启用。
+- `sync --pull` / `--push`：明确返回「预留接口，未实现」并退出码 2，不产生任何远端动作。
 - 需要备份时，用户可自行 `git init` 在库目录并本地提交，ZYX 不代管。

@@ -157,6 +157,10 @@ date: 2026-11-24
 - `hot.md`：≤500 字，只放当前最相关的上下文、未决问题、最近动作；每次摄入后重写。
 - `overview.md`：全库层面的综述；集群增删或大规模摄入后修订。
 
-## 7. 与同步（预留）
+## 7. 可选模板
+
+`assets/templates/` 下五类页面模板（source/entity/concept/comparison/synthesis），可复制到 Obsidian 模板目录或直接照抄 frontmatter；R7 不内置插件配置，模板纯 Markdown。
+
+## 8. 与同步（预留）
 
 库默认只落本机。`git` 同步接口仅预留设计，未启用；契约见 `sync-interface.md`。开启前必须先脱敏并单独授权。

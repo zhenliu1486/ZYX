@@ -699,19 +699,27 @@ def cmd_new_page(args):
     if not slug:
         print("slug 不合法", file=sys.stderr)
         return 1
-    folder = os.path.join(v["root"], v.get("wiki_dir", "wiki"), TYPE_DIR[ptype])
-    os.makedirs(folder, exist_ok=True)
-    path = os.path.join(folder, f"{slug}.md")
-    if os.path.exists(path):
-        print(f"页面已存在，按「不删除、不覆盖」约定拒绝写入: {path}", file=sys.stderr)
-        return 4
     title = args.title or slug
-    text = page_frontmatter(ptype, title, slug) + PAGE_BODY[ptype].rstrip() + "\n"
-    with open(path, "x", encoding="utf-8") as f:
-        f.write(text)
+    path = write_new_page(v, ptype, slug, title)
+    if not path:
+        print(f"页面已存在，按「不删除、不覆盖」约定拒绝写入: {slug}", file=sys.stderr)
+        return 4
+    linked = []
+    for target in getattr(args, "link_to", None) or []:
+        tp = find_page(v, target)
+        if tp:
+            add_see_also(path, os.path.splitext(os.path.basename(tp))[0])
+            linked.append(os.path.splitext(os.path.basename(tp))[0])
+    if getattr(args, "backlink", False):
+        for name in linked:
+            tp = find_page(v, name)
+            if tp:
+                add_see_also(tp, slug)
     touch(v)
     save_registry(data)
     print(f"已建页: {path}")
+    if linked:
+        print("已建立链接: " + ", ".join(f"[[{x}]]" for x in linked) + ("（含双向回链）" if args.backlink else ""))
     print("下一步：补 frontmatter 字段与正文，并把该页链接进 index.md 和至少 2 个相关页面。")
     return 0
 
@@ -740,10 +748,218 @@ def cmd_log(args):
     return 0
 
 
+# ---------------------------------------------------------------- 页面级操作
+
+SEE_ALSO_HEADING = "## 关联（自动回链）"
+
+
+def wiki_root(vault):
+    return os.path.join(vault["root"], vault.get("wiki_dir", "wiki"))
+
+
+def iter_pages(vault):
+    root = wiki_root(vault)
+    for cur, _, files in os.walk(root):
+        for fn in files:
+            if fn.endswith(".md"):
+                yield os.path.join(cur, fn)
+
+
+def find_page(vault, target):
+    """按 stem 或 title 在库内定位页面；target 可带类型前缀 `concepts/xxx`。"""
+    t = target.strip().split("#", 1)[0]
+    want = slugify(os.path.splitext(t)[0] if "/" in t else t)
+    want_path = slugify(os.path.splitext(t)[0]) if "/" in t else None
+    for path in iter_pages(vault):
+        stem = os.path.splitext(os.path.basename(path))[0]
+        rel = os.path.relpath(path, wiki_root(vault))
+        if slugify(stem) == want:
+            return path
+        if want_path and slugify(os.path.splitext(rel)[0]) == want_path:
+            return path
+    return None
+
+
+def add_see_also(path, target_link):
+    """在页面末尾追加 `- see also: [[target]]`；已存在则跳过（幂等）。"""
+    try:
+        text = open(path, encoding="utf-8").read()
+    except Exception:
+        return False
+    if re.search(r"\[\[" + re.escape(target_link) + r"(\||\]\])", text):
+        return False
+    if SEE_ALSO_HEADING not in text:
+        text = text.rstrip() + "\n\n" + SEE_ALSO_HEADING + "\n"
+    text = text.rstrip() + f"\n- see also: [[{target_link}]]\n"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
+    return True
+
+
+def write_new_page(vault, ptype, slug, title):
+    folder = os.path.join(wiki_root(vault), TYPE_DIR[ptype])
+    os.makedirs(folder, exist_ok=True)
+    path = os.path.join(folder, f"{slug}.md")
+    if os.path.exists(path):
+        return None
+    text = page_frontmatter(ptype, title, slug) + PAGE_BODY[ptype].rstrip() + "\n"
+    with open(path, "x", encoding="utf-8") as f:
+        f.write(text)
+    return path
+
+
+def cmd_backlink(args):
+    data = load_registry()
+    v = active_vault(data, args.vault)
+    require_lock(v, args.force)
+    src = find_page(v, args.from_page)
+    dst = find_page(v, args.to_page)
+    if not src or not dst:
+        print(f"未找到页面：{'from' if not src else ''}{' ' if not src and not dst else ''}{'to' if not dst else ''}", file=sys.stderr)
+        return 1
+    src_stem = os.path.splitext(os.path.basename(src))[0]
+    if add_see_also(dst, src_stem):
+        touch(v); save_registry(data)
+        print(f"已加回链: {os.path.relpath(dst, v['root'])} → [[{src_stem}]]")
+    else:
+        print("回链已存在，跳过（幂等）。")
+    return 0
+
+
+def cmd_search(args):
+    data = load_registry()
+    v = active_vault(data, args.vault)
+    root = wiki_root(v)
+    q = args.query.lower()
+    hits = 0
+    for path in iter_pages(v):
+        rel = os.path.relpath(path, root)
+        if args.type and not rel.startswith(TYPE_DIR.get(args.type, args.type) + os.sep):
+            continue
+        try:
+            lines = open(path, encoding="utf-8").read().splitlines()
+        except Exception:
+            continue
+        for i, line in enumerate(lines, 1):
+            if q in line.lower():
+                hits += 1
+                print(f"{rel}:{i}: {line.strip()}")
+                if hits >= args.limit:
+                    print(f"（已到上限 {args.limit} 条，可用 --limit 放宽）")
+                    return 0
+    if hits == 0:
+        print("未命中。可换关键词，或用 lint 看缺页建议。")
+        return 1
+    return 0
+
+
+def cmd_archive(args):
+    if args.type not in ("comparison", "synthesis"):
+        print("归档只支持 comparison / synthesis", file=sys.stderr)
+        return 1
+    data = load_registry()
+    v = active_vault(data, args.vault)
+    require_lock(v, args.force)
+    slug = slugify(args.slug)
+    path = write_new_page(v, args.type, slug, args.title or slug)
+    if not path:
+        print(f"页面已存在，拒绝覆盖: {slug}", file=sys.stderr)
+        return 4
+    linked = []
+    for target in args.link_from or []:
+        tp = find_page(v, target)
+        if tp and add_see_also(tp, slug):
+            linked.append(os.path.splitext(os.path.basename(tp))[0])
+    log_path = os.path.join(wiki_root(v), "log.md")
+    entry = f"\n## [{today()}] query | 归档 {args.type}: {args.title or slug}\n"
+    if linked:
+        entry += "回链: " + ", ".join(f"[[{x}]]" for x in linked) + "\n"
+    with open(log_path, "a", encoding="utf-8") as f:
+        f.write(entry)
+    touch(v); save_registry(data)
+    print(f"已归档: {path}")
+    print(f"回链 {len(linked)} 个页面；日志已写入 log.md")
+    if not linked:
+        print("提示：用 --link-from 指定来源概念页，归档才会接进图谱。")
+    return 0
+
+
+def cmd_promote_check(args):
+    data = load_registry()
+    v = active_vault(data, args.vault)
+    path = find_page(v, args.page)
+    if not path:
+        print(f"未找到页面: {args.page}", file=sys.stderr)
+        return 1
+    text = open(path, encoding="utf-8").read()
+    m = re.match(r"^---\s*\n(.*?)\n---\s*\n", text, re.S)
+    fm = {}
+    if m:
+        for line in m.group(1).splitlines():
+            if ":" in line:
+                k, val = line.split(":", 1)
+                fm[k.strip()] = val.strip()
+    body = text[m.end():] if m else text
+    stem = os.path.splitext(os.path.basename(path))[0]
+    inbound = 0
+    for other in iter_pages(v):
+        if other == path:
+            continue
+        if os.path.basename(other) in ("index.md", "log.md", "hot.md", "overview.md"):
+            continue
+        try:
+            t = open(other, encoding="utf-8").read()
+        except Exception:
+            continue
+        if f"[[{stem}]]" in t:
+            inbound += 1
+    checks = [
+        ("来源可追溯（sources 非空）", bool(fm.get("sources") and fm.get("sources") not in ("[]", ""))),
+        ("可信度已标（confidence 为 high/medium/low）", fm.get("confidence", "").strip("'\"") in ("high", "medium", "low")),
+        ("关联 ≥2 页（related 或回链）", (fm.get("related", "[]").count("[[") >= 2) or inbound >= 2),
+        ("有可执行步骤（正文含 怎么做/步骤/流程）", any(k in body for k in ("## 怎么做", "## 步骤", "## 流程", "可执行"))),
+        ("有边界与反例（正文含 适用条件/反例/失效）", any(k in body for k in ("## 适用条件", "反例", "失效"))),
+    ]
+    print(f"# 晋级自查 — {stem}")
+    print("\n| 项 | 结果 |")
+    print("|---|---|")
+    for name, ok in checks:
+        print(f"| {name} | {'✅' if ok else '⬜ 待补'} |")
+    passed = sum(1 for _, ok in checks if ok)
+    print(f"\n通过 {passed}/{len(checks)}；晋级判据：三重验证（来源/可执行/增益）+ 独立复用价值。本检查仅作候选筛查，不替代 R3 评估，也不阻断任何流程。")
+    return 0
+
+
 def cmd_sync(args):
-    print("R7 同步接口为预留设计，尚未实现（见 references/sync-interface.md）。")
-    print("当前不产生任何远端动作；如需本地备份，可在库目录自行 git init。")
-    return 2
+    data = load_registry()
+    v = active_vault(data, args.vault)
+    root = v["root"]
+    if args.pull or args.push:
+        print("R7 同步写接口（pull/push）为预留设计，尚未实现（见 references/sync-interface.md）。")
+        print("当前不产生任何远端动作；如需备份可在库目录自行 git init 并本地提交。")
+        return 2
+    if not os.path.isdir(os.path.join(root, ".git")):
+        print(f"库 {v['slug']} 不是 git 仓库：未启用同步（本地使用不受影响）。")
+        print("如需版本管理，可在库目录执行 git init；ZYX 不代管远端。")
+        return 0
+    def git(*cmd):
+        try:
+            return subprocess.check_output(["git", "-C", root, *cmd], text=True, stderr=subprocess.DEVNULL).strip()
+        except Exception:
+            return None
+    branch = git("branch", "--show-current") or "（detached）"
+    dirty = git("status", "--porcelain") or ""
+    ahead = git("rev-list", "--count", "@{u}..HEAD")
+    behind = git("rev-list", "--count", "HEAD..@{u}")
+    remote = git("remote", "get-url", "origin")
+    print(f"# 同步状态（只读）— {v['slug']}")
+    print(f"- 分支: {branch}")
+    print(f"- 未提交改动: {len([x for x in dirty.splitlines() if x.strip()])} 项")
+    print(f"- 领先上游: {ahead if ahead is not None else '无上游'}")
+    print(f"- 落后上游: {behind if behind is not None else '无上游'}")
+    print(f"- 远端: {remote or '未配置（纯本地）'}")
+    print("\n只读检查，不联网写；pull/push 仍未实现。")
+    return 0
 
 
 # ---------------------------------------------------------------- 参数
@@ -804,6 +1020,8 @@ def build_parser():
     sp.add_argument("slug")
     sp.add_argument("--title", default="")
     sp.add_argument("--vault", default=None)
+    sp.add_argument("--link-to", action="append", default=[], help="新页链接到已有页（可重复）")
+    sp.add_argument("--backlink", action="store_true", help="同时给对方页加回链")
     sp.add_argument("--force", action="store_true", help="跳过单写锁检查")
     sp.set_defaults(func=cmd_new_page)
 
@@ -816,12 +1034,41 @@ def build_parser():
     sp.add_argument("--force", action="store_true", help="跳过单写锁检查")
     sp.set_defaults(func=cmd_log)
 
-    sp = sub.add_parser("sync", help="同步接口（预留，未实现）")
+    sp = sub.add_parser("sync", help="同步接口（status 只读；pull/push 预留未实现）")
     sp.add_argument("--status", action="store_true")
     sp.add_argument("--pull", action="store_true")
     sp.add_argument("--push", action="store_true")
     sp.add_argument("--dry-run", action="store_true")
+    sp.add_argument("--vault", default=None)
     sp.set_defaults(func=cmd_sync)
+
+    sp = sub.add_parser("backlink", help="给已有页加回链")
+    sp.add_argument("from_page")
+    sp.add_argument("to_page")
+    sp.add_argument("--vault", default=None)
+    sp.add_argument("--force", action="store_true")
+    sp.set_defaults(func=cmd_backlink)
+
+    sp = sub.add_parser("search", help="库内本地检索")
+    sp.add_argument("query")
+    sp.add_argument("--type", choices=sorted(TYPE_DIR))
+    sp.add_argument("--vault", default=None)
+    sp.add_argument("--limit", type=int, default=20)
+    sp.set_defaults(func=cmd_search)
+
+    sp = sub.add_parser("archive", help="把问答结果归档为对比/综述页并回链")
+    sp.add_argument("type", choices=["comparison", "synthesis"])
+    sp.add_argument("slug")
+    sp.add_argument("--title", default="")
+    sp.add_argument("--link-from", action="append", default=[], help="来源页（可重复）")
+    sp.add_argument("--vault", default=None)
+    sp.add_argument("--force", action="store_true")
+    sp.set_defaults(func=cmd_archive)
+
+    sp = sub.add_parser("promote-check", help="晋级 Skill 前的候选自查（只读，不阻断）")
+    sp.add_argument("page")
+    sp.add_argument("--vault", default=None)
+    sp.set_defaults(func=cmd_promote_check)
     return p
 
 

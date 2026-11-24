@@ -35,13 +35,14 @@ allowed-tools: Read, Write, Edit, Bash
 
 用户的库若把知识放别的目录名，用 `--wiki-dir` / `--raw-dir` 指过去，不要改用户的目录名。
 
-## 3. 四个操作
+## 3. 五个操作
 
 | 操作 | 触发信号 | 动作 | 产物 |
 |---|---|---|---|
 | `init` | 「建一个关于 X 的知识库」 | 建骨架、写 schema、登记注册表 | 空库 + `index/log/hot/overview` |
 | `ingest` | 「把这篇文章/这本书加进我的库里」 | 先验记录 → 读原料 → 摘要页 → 更新相关页 → 矛盾标注 → 补新页 → 更新索引 → 写日志 | 一页摘要 + 牵动 5–15 页 |
-| `query` | 「我库里关于 X 有什么结论」 | 读索引定位 → 读命中页 → 带 wikilink 作答 → 有价值则归档 | 答案（可选归档为对比/综述页） |
+| `query` | 「我库里关于 X 有什么结论」 | 先用 `search` 定位 → 读命中页 → 带 wikilink 作答 → 有价值则 `archive` 归档并回链 | 答案 + 对比/综述页（可选） |
+| `search` | 「库里哪里提过 X」 | 本地全文检索，按类型过滤、限条数 | 命中行号与上下文（只读） |
 | `lint` | 「体检一下我的库」 | 跑巡检脚本 → 按优先级修 → 记日志 | 健康报告 + 修复清单 |
 
 详细步骤见 `references/operations.md`；目录与 frontmatter 规范见 `references/vault-layout.md`。
@@ -71,17 +72,27 @@ python3 scripts/wiki.py lock <slug>      # 取写锁（--force 接管陈旧锁�
 python3 scripts/wiki.py unlock <slug>
 
 # 写页面 / 日志（未持锁会被拒绝，退出码 5）
-python3 scripts/wiki.py new-page concept "增量认知校验" --title "增量认知校验"
+python3 scripts/wiki.py new-page concept "增量认知校验" --title "增量认知校验" \
+    --link-to 三重验证 --backlink        # 建页即双向互链
 python3 scripts/wiki.py log ingest "《xxx》摄入" --detail "新增 3 页，更新 5 页，1 处矛盾"
+
+# 检索 / 回链 / 问答归档 / 晋级自查
+python3 scripts/wiki.py search "增量" --type concept --limit 10
+python3 scripts/wiki.py backlink 增量认知校验 三重验证     # 幂等
+python3 scripts/wiki.py archive synthesis "知识库方法综述" --link-from 增量认知校验
+python3 scripts/wiki.py promote-check 增量认知校验          # 只读，给候选建议
+
+# 端到端自测（临时库，跑完清理）
+python3 scripts/wiki-selftest.py
 
 # 健康巡检（只读，退出码恒 0）
 python3 scripts/wiki-lint.py "$(python3 scripts/wiki.py resolve)" [--json]
 
-# 同步（预留，未实现，返回提示）
+# 同步：status 只读；pull/push 预留未实现
 python3 scripts/wiki.py sync --status
 ```
 
-规则与退出码：锁被占 → 3；页面已存在（不覆盖）→ 4；未持锁写入 → 5；参数/路径错误 → 1。
+规则与退出码：锁被占 → 3；页面已存在（不覆盖）→ 4；未持锁写入 → 5；参数/路径错误 → 1；sync 写接口预留 → 2。
 
 ## 6. 路径与状态
 
@@ -99,14 +110,19 @@ python3 scripts/wiki.py sync --status
 | 归档页交付前质检与脱敏 | `../zyx/shared/quality/qa-audit.md` |
 | 目录/命名/MANIFEST | `../zyx/shared/artifacts/convention.md` |
 
-## 8. 与其他路由的衔接
+## 8. 可选模板与自测
+
+- `assets/templates/`：五类页面模板（`{{title}}` / `{{slug}}` / `{{date}}` 占位），可复制进 Obsidian 模板文件夹；R7 不内置插件配置，`new-page` 已能直接生成同结构。
+- `scripts/wiki-selftest.py`：31 项端到端回归（建库/锁/并发/重复/回链/归档/检索/lint/挂载/sync），临时库跑完即清理；`doctor.sh --full` 会调用它。
+
+## 9. 与其他路由的衔接
 
 - **晋级到 R3**：某份原料在库里沉淀出独立复用价值，且过三重验证（来源充分 / 可执行 / 任务增益）+ 具备独立复用价值，才委派仓颉打包成 Skill。
 - **深挖走 R1/R2**：人物视角、行业打法不在库里造，wiki 只留摘要与 wikilink。
 - **改版走 R6**：页面被否或要按反馈迭代时，先由 f2r 把反馈显性化为规则，再回写。
 - **当下问题走 R4**：只要判断、不要求进长期库的请求不进 R7。
 
-## 9. 边界与失败模式
+## 10. 边界与失败模式
 
 - 挂载用户库时误建目录、误改结构 → 默认不写，`--provision` 才补缺失骨架。
 - 并发写坏库 → 单写锁强制拦截；陈旧锁可 `--force` 但需先核对上次写入。
@@ -114,6 +130,6 @@ python3 scripts/wiki.py sync --status
 - 库变大后上下文膨胀 → 靠 `hot.md` 热缓存 + 按需只读命中页；不整库塞进对话。
 - 版权与隐私 → 不存长段原文，只留摘要 + 最短引用；入库前脱敏。
 
-## 10. 决策记录
+## 11. 决策记录
 
 - 2026-11-24：确认为独立 R7 路由（不并入 R3）；支持挂载已有 Obsidian 库；只做 Obsidian Markdown；**不设覆盖度闸门**；显式单写、禁并行、多会话写同一库；预留 git 同步接口；页面晋级 Skill 复用三重验证 + 独立复用价值。

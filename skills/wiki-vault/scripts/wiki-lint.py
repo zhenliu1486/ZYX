@@ -30,6 +30,21 @@ import sys
 WIKILINK = re.compile(r"\[\[([^\[\]]+?)\]\]")
 FM_BLOCK = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.S)
 SPECIAL_PAGES = {"index", "log", "hot", "overview"}
+FOLDER_TYPE = {
+    "sources": "source",
+    "entities": "entity",
+    "concepts": "concept",
+    "comparisons": "comparison",
+    "syntheses": "synthesis",
+}
+REQUIRED_BY_TYPE = {
+    "source": ["source_file", "date_ingested"],
+    "concept": ["confidence", "cluster"],
+    "entity": ["entity_type"],
+    "comparison": ["date"],
+    "synthesis": ["date"],
+}
+LOG_LINE = re.compile(r"^## \[\d{4}-\d{2}-\d{2}\] (init|ingest|query|lint|sync|note) \|")
 
 
 def slug_key(text):
@@ -118,6 +133,8 @@ def main():
     ap.add_argument("--stale-days", type=int, default=180)
     ap.add_argument("--min-body", type=int, default=50)
     ap.add_argument("--missing-threshold", type=int, default=3)
+    ap.add_argument("--exit-code", action="store_true",
+                    help="结构性有问题时返回 1（默认恒 0；不用于覆盖度判定）")
     args = ap.parse_args()
 
     wiki_dir = os.path.join(os.path.abspath(os.path.expanduser(args.vault_root)), args.wiki_dir)
@@ -163,7 +180,7 @@ def main():
         unique_broken.append(b)
     broken = unique_broken
 
-    # frontmatter 检查
+    # frontmatter 检查（通用必填 + 按类型必填 + 目录/类型一致）
     missing_fm = []
     for rel, pg in pages.items():
         if pg["special"]:
@@ -176,6 +193,14 @@ def main():
             missing_fm.append({"page": rel, "issue": "缺 type"})
         if not fm.get("title"):
             missing_fm.append({"page": rel, "issue": "缺 title"})
+        ptype = str(fm.get("type", "")).strip()
+        expect = FOLDER_TYPE.get(pg["dir"])
+        if ptype and expect and ptype != expect:
+            missing_fm.append({"page": rel, "issue": f"目录与 type 不一致（{pg['dir']} 应为 {expect}）"})
+        for field in REQUIRED_BY_TYPE.get(ptype, []):
+            val = fm.get(field, "")
+            if not val or val in ("[]", '""'):
+                missing_fm.append({"page": rel, "issue": f"缺 {field}"})
 
     # 孤儿页 / 仅索引引用
     # orphan：任何页面（含 index）都没有指向它 → 真正孤立
@@ -251,6 +276,16 @@ def main():
         if len(re.sub(r"\s+", "", pg["body"])) < args.min_body:
             thin.append(rel)
 
+    # 活动日志格式
+    log_issues = []
+    if os.path.isfile(os.path.join(wiki_dir, "log.md")):
+        with open(os.path.join(wiki_dir, "log.md"), encoding="utf-8") as f:
+            for i, line in enumerate(f, 1):
+                if line.startswith("## ") and not LOG_LINE.match(line.strip()):
+                    log_issues.append({"line": i, "text": line.strip()[:80]})
+    else:
+        log_issues.append({"line": 0, "text": "wiki/log.md 缺失"})
+
     # 矛盾标记
     contradictions = []
     for rel, pg in pages.items():
@@ -273,6 +308,7 @@ def main():
             "stale": len(stale),
             "thin": len(thin),
             "contradictions": sum(c["count"] for c in contradictions),
+        "log_issues": len(log_issues),
         },
         "broken_links": broken,
         "missing_pages": missing_pages,
@@ -284,6 +320,7 @@ def main():
         "stale": stale,
         "thin": thin,
         "contradictions": contradictions,
+        "log_issues": log_issues,
         "note": "仅统计，不阻断结论（R7 不设覆盖度闸门）；由人或 LLM 决定优先修哪几项。",
     }
 
@@ -305,6 +342,7 @@ def main():
     print(f"- 陈旧页（>{args.stale_days} 天）：{s['stale']}")
     print(f"- 过薄页：{s['thin']}")
     print(f"- 矛盾标记：{s['contradictions']}")
+    print(f"- 日志格式问题：{s['log_issues']}")
 
     def section(title, items, fmt):
         if not items:
@@ -323,6 +361,7 @@ def main():
     section("陈旧页", stale, lambda x: f"`{x['page']}`（updated {x['updated']}，{x['age_days']} 天）")
     section("过薄页", thin, lambda x: f"`{x}`")
     section("矛盾标记", contradictions, lambda x: f"`{x['page']}` × {x['count']}")
+    section("日志格式问题", log_issues, lambda x: f"第 {x['line']} 行：`{x['text']}`")
 
     print("\n## 建议下一步")
     print("1. 先修断链与 frontmatter，保证图谱可遍历。")
@@ -330,6 +369,12 @@ def main():
     print("3. 孤儿页二选一：接到相关概念，或标记 deprecated（不删除）；仅索引引用的页补 2 条内容页互链。")
     print("4. 陈旧页按新来源复核；矛盾处保留分歧并用 `> [!contradiction]` 标注依据。")
     print("\n> 本报告只做客观统计，不判定「覆盖不足禁止下结论」；是否可用由使用者判断。")
+    if args.exit_code:
+        structural = (
+            s["broken_links"] + s["frontmatter_issues"] + s["log_issues"]
+            + s["missing_pages"] + s["orphans"] + s["deprecated_linked"]
+        )
+        return 1 if structural else 0
     return 0
 
 

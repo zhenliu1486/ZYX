@@ -1,6 +1,6 @@
 # ZYX × Karpathy LLM Wiki 结合研究方案（先研究，不改代码）
 
-> 状态：2026-11-24 决策已定稿并完成 P1 骨架实现（R7 `wiki-vault`）。本文先拆清卡帕西这套 LLM 自动维护 Wiki 的流程，对照 ZYX 现有 R1–R6 与 shared 底座，给出推荐集成方案、缺口清单、分阶段计划和待拍板决策。
+> 状态：2026-11-24 决策已定稿，P1–P4 全部完成并随 v1.2.0 上线（R7 `wiki-vault`）。本文先拆清卡帕西这套 LLM 自动维护 Wiki 的流程，对照 ZYX 现有 R1–R6 与 shared 底座，给出推荐集成方案、缺口清单、分阶段计划和待拍板决策。
 > 模式来源：Andrej Karpathy 2026 年 4 月提出的 LLM Wiki 思路；社区落地蓝图参考 ScrapingArt/Karpathy-LLM-Wiki-Stack（见文末来源）。**注意：ZYX 与 Karpathy 本人无关联，对外表述只能说「借鉴该模式」，不得写成 Karpathy 推荐或背书。**
 
 ## 1. 结论先行（TL;DR）
@@ -178,10 +178,13 @@
 | 远端同步 | **预留 git 同步接口**（`sync-interface.md` 契约），当前未实现、无任何远端动作 |
 | 晋级判据 | **复用三重验证（来源/可执行/增益）+ 具备独立复用价值** |
 
-### 已完成（P1）
-- `skills/wiki-vault/`：`SKILL.md`、`references/vault-layout.md`、`references/operations.md`、`references/sync-interface.md`、`scripts/wiki.py`（注册表/单写锁/骨架/建页/日志/同步占位）、`scripts/wiki-lint.py`（断链/缺页/孤儿/仅索引/索引覆盖/废弃/陈旧/过薄/矛盾）。
+### 已完成（P1–P4）
+- `skills/wiki-vault/`：`SKILL.md`、三份 references、`assets/templates/` 五类模板。
+- `scripts/wiki.py`：注册表、单写锁（会话租约）、骨架、建页（支持 `--link-to/--backlink`）、日志、`search`、`backlink`、`archive`、`promote-check`、`sync --status`（只读）。
+- `scripts/wiki-lint.py`：断链/缺页/孤儿/仅索引/索引覆盖/废弃/陈旧/过薄/矛盾 + 按类型必填字段、目录与 type 一致性、日志格式；可选 `--exit-code`。
+- `scripts/wiki-selftest.py`：31 项端到端回归；`doctor.sh --full` 调用。
 - zyx 接入：manifest 加 R7、路由表七类、产物布局 `wiki/`、`artifact-dir.sh` 与 `route.sh` 白名单、doctor 知识库段、回归用例 E11–E14、版本 1.2.0。
 - 实测：建库 → 取锁 → 建页 → 重复覆盖被拒（4）→ 日志 → 他人持锁被拒（3/5）→ 巡检九类指标 → 挂载已有 Obsidian 库不写入。
 
-### 未完成（P2+）
-- 问答回写归档的自动化、与 R6 反馈联动的脚本化、同步接口实现、Obsidian 模板与本地搜索增强、干净宿主回归。
+### 已知边界（不阻塞上线）
+- `sync --pull/--push` 仍为预留（写接口需单独授权后实现）；R6 反馈联动目前靠既有原语（`new-page` + `backlink` + `log`）编排，未做成独立命令；库特别大时的搜索性能后续可接外部索引。
