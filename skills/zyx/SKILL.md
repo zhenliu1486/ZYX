@@ -21,7 +21,7 @@ allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
 zyx/                                  # 第 1 层：入口路由（本目录，薄壳）
 ├── SKILL.md                          #   判断原料类型 → 转发 → 收口产物
 ├── references/
-│   ├── routing-table.md               #   四类原料的判定信号与分流规则
+│   ├── routing-table.md               #   六类原料的判定信号与分流规则
 │   └── artifact-layout.md            #   产物目录命名与回传规范（与 shared/artifacts 对齐）
 ├── scripts/
 │   ├── route.sh                       #   打印当前路由决策与被调 Skill 路径
