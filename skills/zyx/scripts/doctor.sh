@@ -6,7 +6,7 @@
 #
 # 选项:
 #   --online   额外做上游网络可达性检查（默认离线，避免自检被网络拖慢）。
-#   --full     额外跑 R7 知识库端到端自测（会创建并清理临时库，不碰真实库）。
+#   --full     额外跑 R7 知识库端到端自测与 Look Gate 自测（临时目录，不碰真实产物）。
 
 set -uo pipefail
 
@@ -160,6 +160,85 @@ if [ "$FULL" -eq 1 ] && [ -n "$WV" ] && [ -f "$WV/scripts/wiki-selftest.py" ]; t
   echo
   echo "  ## R7 端到端自测（--full）"
   python3 "$WV/scripts/wiki-selftest.py" || { echo "  ❌ R7 自测存在失败项"; warn=1; }
+fi
+echo
+
+echo "## 9. 视觉验收（Look Gate）"
+if [ -f "$SCRIPT_DIR/look.py" ]; then
+  echo "  ✅ look.py 可用 → $SCRIPT_DIR/look.py"
+else
+  echo "  ⚠ 缺少 look.py（视觉产物验收不可用；重装 install.sh 可补）"
+  warn=1
+fi
+for c in chromium soffice pdftoppm ffmpeg; do
+  if command -v "$c" >/dev/null 2>&1; then
+    echo "  ✅ $c 可用"
+  else
+    echo "  ⚠ 缺少 $c（对应格式无法渲染；按需安装）"
+    warn=1
+  fi
+done
+if python3 - <<'PY' 2>/dev/null
+import importlib.util
+raise SystemExit(0 if importlib.util.find_spec("PIL") else 1)
+PY
+then
+  echo "  ✅ Pillow 可用（contact sheet）"
+elif command -v montage >/dev/null 2>&1; then
+  echo "  ✅ ImageMagick montage 可用（contact sheet 回退）"
+else
+  echo "  ⚠ 缺少 Pillow/ImageMagick（contact sheet 不可用）"
+  warn=1
+fi
+if [ "$FULL" -eq 1 ] && [ -f "$SCRIPT_DIR/look-selftest.py" ]; then
+  echo
+  echo "  ## Look Gate 自测（--full）"
+  python3 "$SCRIPT_DIR/look-selftest.py"
+  rc=$?
+  if [ "$rc" -eq 2 ]; then
+    echo "  ℹ 跳过拼图（宿主缺 Pillow/ImageMagick）"
+  elif [ "$rc" -ne 0 ]; then
+    echo "  ❌ Look Gate 自测失败"
+    warn=1
+  fi
+fi
+echo
+
+echo "## 10. Omarchy 握手（可选）"
+if [ -f "$SCRIPT_DIR/omarchy-bridge.py" ]; then
+  bridge_out="$(python3 "$SCRIPT_DIR/omarchy-bridge.py" status 2>&1 || true)"
+  echo "$bridge_out" | sed 's/^/  /'
+  if echo "$bridge_out" | grep -q '^握手: partial'; then
+    echo "  ⚠ Omarchy 已检测到，但 ZYX/R7 未完整安装；先跑 install.sh。"
+    warn=1
+  fi
+else
+  echo "  ℹ 未带 Omarchy 握手脚本（可选）"
+fi
+echo
+
+echo "## 11. Context Card（跨宿主记忆）"
+if [ -n "$WV" ] && [ -f "$WV/scripts/wiki.py" ]; then
+  if python3 "$WV/scripts/wiki.py" list --plain 2>/dev/null | grep -q .; then
+    ctx_json="$(python3 "$WV/scripts/wiki.py" context --json 2>/dev/null || true)"
+    ctx_slug="$(printf '%s' "$ctx_json" | python3 -c 'import json,sys;print(json.load(sys.stdin).get("slug",""))' 2>/dev/null || true)"
+    installed=0
+    for base in "${HOST_DIRS[@]}"; do
+      card="$base/zyx-context/SKILL.md"
+      if [ -f "$card" ] && grep -q "slug=$ctx_slug" "$card" 2>/dev/null; then
+        installed=$((installed+1))
+      fi
+    done
+    if (( installed > 0 )); then
+      echo "  ✅ 活动库 $ctx_slug 的 context 卡已安装 $installed 处"
+    else
+      echo "  ℹ 活动库 $ctx_slug 尚未安装 context 卡；需要时说「安装知识库上下文卡」，或跑 wiki.py context --install"
+    fi
+  else
+    echo "  ℹ 尚无知识库；建库后可安装 context 卡"
+  fi
+else
+  echo "  ℹ 未检测到 wiki-vault"
 fi
 echo
 

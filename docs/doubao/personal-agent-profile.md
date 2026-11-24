@@ -35,7 +35,8 @@
 1. 上传 `wiki-vault.zip`（`bash scripts/package-doubao.sh --only wiki-vault`）。
 2. 在人设里写明「知识库位置：`~/Doubao/wiki/<slug>`」，或让管家用 `wiki.py where` 自己读。
 3. 首次对话让它跑一次 `brief`；能读出库名、页数、最近日志，即接通。
-4. 若在手机端，确认同一账号下能看到同一个库；看不到就检查库是否建在 `~/Doubao/wiki` 之外。
+4. 换到别的 agent（Claude/Codex/Omarchy）时，跑 `wiki.py context --install` 把当前库投影成 `zyx-context` 技能卡；`use` 换库会自动刷新，不要手工改卡。
+5. 若在手机端，确认同一账号下能看到同一个库；看不到就检查库是否建在 `~/Doubao/wiki` 之外。
 
 ## 不适合交给它的
 

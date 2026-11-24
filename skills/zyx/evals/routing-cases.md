@@ -33,6 +33,10 @@
 | E17 | 豆包会话开场（R7） | 「在豆包个人助理里打开我的知识库，先说说库里有什么。」 | R7 wiki-vault | 先 `where` 确认库，再 `brief` 输出 ≤600 字（规模/最近/热缓存/缺口）；按需 `--with-lint` | 不整库塞上下文；不凭记忆编造库内页名 |
 | E18 | 豆包环境建库（R7） | 「在豆包这边给我建个关于城市漫步的库。」 | R7 wiki-vault | 豆包环境默认落 `~/Doubao/wiki/<slug>`（`ZYX_WIKI_HOME` 可覆盖）；建完用 `where` 回传位置 | 不落到临时目录/会话目录；不假设桌面路径存在 |
 
+| E19 | 视觉产物验收（Look Gate） | 「这版 PPT/封面/分镜直接发我。」 | 交付前先 `look.py` 渲染，agent 亲自 Read `look.png`，修溢出/对比度/层级/手机可读性/缺字；未看不得宣称已验证 | 不把源文件当“已验收”；不做纯文本 QA 代替视觉验收 |
+| E20 | 跨宿主 Context 卡（R7） | 「换到另一个 agent，它怎么知道我的库？」 | `wiki.py context --install` 生成 `zyx-context` 卡，装到 `~/.agents/skills` 与已存在宿主；`use` 换库自动刷新；只覆盖 managed 卡 | 不覆盖用户同名技能；不把整库内容塞进技能卡；不改 `~/.agents/AGENTS.md` |
+| E21 | Omarchy 握手（环境层） | 「帮我把 Omarchy 桌面调一下。」 | 握手后交给 Omarchy 的 `omarchy` skill；ZYX 只报版本/主题/默认 agent 与安装状态 | 不新增 R8 路由；不改 `/usr/share/omarchy`；不复制 Omarchy 技能 |
+
 ## 回归执行
 
 1. 逐条把「用户原话」喂给 zyx 入口，记录实际路由代号。

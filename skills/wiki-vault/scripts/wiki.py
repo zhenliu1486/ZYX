@@ -3,7 +3,7 @@
 
 子命令：
   init <slug> [--topic T] [--root PATH] [--provision]
-      新建一个受管库（默认 <桌面>/zyx-output/wiki/<slug>），生成 raw/ 与 wiki/ 骨架。
+      新建一个受管库（豆包环境默认 ~/Doubao/wiki/<slug>，其他宿主 <桌面>/zyx-output/wiki/<slug>），生成 raw/ 与 wiki/ 骨架。
   mount <slug> <path> [--topic T] [--provision]
       挂载一个已存在的 Obsidian 库目录（不搬动、不重构用户既有目录）。
   list [--plain|--json]
@@ -14,6 +14,8 @@
   unlock <slug>
   new-page <type> <slug> [--title T] [--vault SLUG] [--force]
   log <op> <title> [--vault SLUG] [--date YYYY-MM-DD] [--detail TEXT] [--force]
+  context [--install|--remove] [--dir D] [--json]
+      把活动库状态投影成 zyx-context 技能卡，安装/移除到宿主 skills 目录。
 
 约定：
 - 一个库 = 一个目录（通常是 Obsidian vault）；库内结构见 references/vault-layout.md。
@@ -28,6 +30,7 @@ import getpass
 import json
 import os
 import re
+import shlex
 import shutil
 import socket
 import subprocess
@@ -507,6 +510,7 @@ def cmd_init(args):
     if not data.get("active"):
         data["active"] = slug
     save_registry(data)
+    refresh_context_cards(data, data.get("active") or slug)
     print(f"已建库: {slug}")
     print(f"根目录: {root}")
     print(f"活动库: {data.get('active')}")
@@ -548,6 +552,7 @@ def cmd_mount(args):
     if not data.get("active"):
         data["active"] = slug
     save_registry(data)
+    refresh_context_cards(data, data.get("active") or slug)
     print(f"已挂载: {slug} → {root}")
     print(f"Obsidian 库: {'是' if info['obsidian'] else '否（普通 Markdown 目录也可用）'}")
     print(f"raw/: {'有' if info['raw'] else '无'}｜wiki/: {'有' if info['wiki'] else '无'}")
@@ -596,7 +601,10 @@ def cmd_use(args):
     data["active"] = v["slug"]
     touch(v)
     save_registry(data)
+    refreshed = refresh_context_cards(data, v["slug"])
     print(f"活动库已切换: {v['slug']} → {v['root']}")
+    if refreshed:
+        print(f"已同步 context 卡: {len(refreshed)} 处")
     return 0
 
 
@@ -854,6 +862,206 @@ def cmd_brief(args):
                           "recent": recent[-2:], "hot": hot[:160], "text": text}, ensure_ascii=False, indent=2))
         return 0
     print(text[: args.max_chars])
+    return 0
+
+
+CONTEXT_SKILL_NAME = "zyx-context"
+CONTEXT_MARKER = "<!-- zyx-context-card: managed"
+
+
+def context_host_dirs(explicit=None):
+    """Context 卡的目标目录：--dir > ZYX_CONTEXT_DIRS > ~/.agents/skills + 已存在的宿主 skills 目录。"""
+    home = os.path.expanduser("~")
+    dirs = []
+    if explicit:
+        dirs.extend(os.path.expanduser(d) for d in explicit)
+    else:
+        env = os.environ.get("ZYX_CONTEXT_DIRS")
+        if env:
+            dirs.extend(d for d in env.split(os.pathsep) if d)
+        else:
+            dirs.append(os.path.join(home, ".agents", "skills"))
+            for rel in (
+                ".claude/skills",
+                ".openclaw/skills",
+                ".codex/skills",
+                ".doubao/agent_mode/workspace/.user_skills",
+                ".gemini/skills",
+                ".kiro/skills",
+                ".qwen/skills",
+                ".grok/skills",
+                ".hermes/skills",
+            ):
+                p = os.path.join(home, rel)
+                if os.path.isdir(p):
+                    dirs.append(p)
+    out, seen = [], set()
+    for d in dirs:
+        if not d:
+            continue
+        d = os.path.abspath(d)
+        rp = os.path.realpath(d)
+        if rp in seen:
+            continue
+        seen.add(rp)
+        out.append(d)
+    return out
+
+
+def context_card(v, generated=None):
+    """把活动库的状态投影成一张 8–12 行的宿主技能卡。"""
+    topic = (v.get("topic") or v["slug"]).replace("|", "\\|")
+    desc = re.sub(r"\s+", " ", f"读取「{topic}」长期知识库（{v['slug']}）的简报；用户提到「我的知识库 / 我库里 / 接着上次的库 / 我的 wiki」或需要长期背景时先用。")
+    qpy = shlex.quote(os.path.abspath(__file__))
+    qslug = shlex.quote(v["slug"])
+    generated = generated or dt.date.today().isoformat()
+    return f"""---
+name: {CONTEXT_SKILL_NAME}
+description: >
+  {desc}
+---
+# 知识库上下文 · {topic}
+
+这是我在本机的个人长期知识库。先读简报，再决定是否检索页面。
+
+| 项 | 值 |
+|---|---|
+| 库名 | `{v['slug']}` |
+| 位置 | `{v['root']}` |
+| 主题 | {topic} |
+| 生成时间 | {generated} |
+
+## 先读简报
+
+```bash
+python3 {qpy} brief --vault {qslug} --with-lint
+```
+
+只想知道规模时去掉 `--with-lint`。
+
+## 再检索
+
+```bash
+python3 {qpy} search "<关键词>" --vault {qslug}
+```
+
+## 规则
+
+- 先简报，后检索；回答带页面标题或 `[[页面名]]`。
+- 只读命中的 1–3 页，不把整库贴进上下文。
+- 写入前先 `lock`，写完 `unlock`；不并行写。
+- 库里没有就说「库里还没有」，不要用常识补。
+
+<!-- zyx-context-card: managed; slug={v['slug']}; regenerate: python3 {qpy} context --install -->
+"""
+
+
+def context_card_path(target):
+    return os.path.join(target, CONTEXT_SKILL_NAME, "SKILL.md")
+
+
+def read_text(path):
+    try:
+        return open(path, encoding="utf-8").read()
+    except Exception:
+        return ""
+
+
+def is_managed_card(path):
+    return CONTEXT_MARKER in read_text(path)
+
+
+def write_context_card(target, content):
+    path = context_card_path(target)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(content)
+    os.replace(tmp, path)
+    return path
+
+
+def refresh_context_cards(data, slug):
+    """只刷新已存在的托管卡，不新装；切换活动库后避免旧卡指向旧库。"""
+    v = find_vault(data, slug)
+    if not v:
+        return []
+    content = context_card(v)
+    written = []
+    for target in context_host_dirs(None):
+        path = context_card_path(target)
+        if os.path.isfile(path) and is_managed_card(path):
+            write_context_card(target, content)
+            written.append(path)
+    return written
+
+
+def cmd_context(args):
+    if args.install and args.remove:
+        print("--install 与 --remove 不能同时用", file=sys.stderr)
+        return 2
+    data = load_registry()
+    targets = context_host_dirs(args.dir or None)
+    if not targets:
+        print("没有可用的宿主 skills 目录；用 --dir 指定一个", file=sys.stderr)
+        return 1
+
+    if args.remove:
+        removed, skipped = [], []
+        for target in targets:
+            path = context_card_path(target)
+            if not os.path.isfile(path):
+                continue
+            if not is_managed_card(path):
+                skipped.append(path)
+                continue
+            os.remove(path)
+            parent = os.path.dirname(path)
+            try:
+                os.rmdir(parent)
+            except OSError:
+                pass
+            removed.append(path)
+        if args.json:
+            print(json.dumps({"action": "remove", "removed": removed, "skipped": skipped}, ensure_ascii=False, indent=2))
+        else:
+            for p in removed:
+                print(f"已删除: {p}")
+            for p in skipped:
+                print(f"跳过（非 ZYX 托管，未删除）: {p}")
+            if not removed and not skipped:
+                print("没有已安装的 context 卡。")
+        return 0
+
+    v = active_vault(data, args.vault)
+    content = context_card(v)
+    if args.install:
+        conflicts = [
+            context_card_path(t)
+            for t in targets
+            if os.path.exists(context_card_path(t)) and not is_managed_card(context_card_path(t))
+        ]
+        if conflicts:
+            print("目标位置已有非 ZYX 托管的同名技能，未覆盖：", file=sys.stderr)
+            for p in conflicts:
+                print(f"  {p}", file=sys.stderr)
+            print("先手动移走该目录，或改用 --dir 指定其他目录。", file=sys.stderr)
+            return 1
+        paths = [write_context_card(t, content) for t in targets]
+        if args.json:
+            print(json.dumps({"action": "install", "name": CONTEXT_SKILL_NAME, "slug": v["slug"],
+                              "root": v["root"], "paths": paths}, ensure_ascii=False, indent=2))
+        else:
+            print(f"已安装 context 卡: {CONTEXT_SKILL_NAME}（{v['slug']}）")
+            for p in paths:
+                print(f"  → {p}")
+        return 0
+
+    if args.json:
+        print(json.dumps({"action": "preview", "name": CONTEXT_SKILL_NAME, "slug": v["slug"],
+                          "root": v["root"], "targets": targets, "content": content}, ensure_ascii=False, indent=2))
+    else:
+        print(content)
     return 0
 
 
@@ -1178,6 +1386,14 @@ def build_parser():
     sp.add_argument("--vault", default=None)
     sp.add_argument("--json", action="store_true")
     sp.set_defaults(func=cmd_where)
+
+    sp = sub.add_parser("context", help="生成/安装跨宿主知识库技能卡")
+    sp.add_argument("--vault", default=None)
+    sp.add_argument("--install", action="store_true")
+    sp.add_argument("--remove", action="store_true")
+    sp.add_argument("--dir", action="append", default=[], help="目标 skills 目录（可重复）")
+    sp.add_argument("--json", action="store_true")
+    sp.set_defaults(func=cmd_context)
 
     sp = sub.add_parser("brief", help="生成 ≤600 字知识库简报（会话开头读）")
     sp.add_argument("--vault", default=None)

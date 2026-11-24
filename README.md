@@ -12,7 +12,7 @@ ZYX/
 │   │   ├── README.md         # 日常调用示例与自检/更新说明
 │   │   ├── CHANGELOG.md
 │   │   ├── references/       # 路由判定表、产物目录与回传规范
-│   │   ├── scripts/          # 路由解析、自注册、静默更新、自检、产物目录
+│   │   ├── scripts/          # 路由解析、自注册、静默更新、自检、look.py、omarchy-bridge.py
 │   │   ├── shared/          # 第 3 层：共享底座（校验/质检/可信度/规范/压测）
 │   │   └── evals/           # 路由回归用例
 │   ├── video-studio/         # R5 影视/短剧/漫剧制作聚合层（内部路由子技能）
@@ -21,6 +21,7 @@ ZYX/
 │   ├── doubao/              # 豆包 personal agent 人设卡
 │   ├── research/            # 设计与决策记录
 │   └── promo/               # 对外素材
+├── scripts/install.sh        # 一键安装（含内置技能）
 ├── scripts/package-doubao.sh # 打成豆包「上传技能」可用的 zip
 ├── .gitignore
 └── LICENSE
@@ -42,10 +43,15 @@ ZYX/
 
 ## 安装
 
-把需要的 Skill 目录复制到兼容宿主的 skills 目录：
+推荐一键安装（含内置技能；外部蒸馏器另加 `--install-deps`）：
 
 ```bash
-# 以 Claude Code 为例
+bash scripts/install.sh --dir ~/.claude/skills
+```
+
+也可以手动复制：
+
+```bash
 cp -r skills/zyx ~/.claude/skills/zyx
 cp -r skills/video-studio ~/.claude/skills/video-studio
 ```
@@ -67,13 +73,32 @@ bash scripts/package-doubao.sh --only wiki-vault
 在豆包环境里，知识库默认建在 `~/Doubao/wiki/<slug>`（`ZYX_WIKI_HOME` 可覆盖）；让 Agent 记住 `wiki.py where` 的库名与路径，会话开头跑 `wiki.py brief`，每周任务跑 `wiki-lint.py`。
 「知识库管家」人设卡见 [docs/doubao/personal-agent-profile.md](docs/doubao/personal-agent-profile.md)，机制与边界见 [skills/wiki-vault/references/personal-agent.md](skills/wiki-vault/references/personal-agent.md)。
 
+## Omarchy 握手、Context Card 与 Look Gate
+
+不新增 R8 路由；只借 Omarchy 的三个工程默认，补 ZYX 的“可验证能力”：
+
+```bash
+# 1. 只读握手：Omarchy 版本/主题/默认 agent + ZYX/R7/context 卡状态
+python3 skills/zyx/scripts/omarchy-bridge.py status
+
+# 2. 把 R7 活动库投影成跨宿主技能卡（换库自动刷新）
+python3 skills/wiki-vault/scripts/wiki.py context --install
+
+# 3. 视觉产物先渲染成图，agent 亲自看过再交付
+python3 skills/zyx/scripts/look.py deck.pptx --out ./look
+```
+
+- Context 卡名为 `zyx-context`，装进 `~/.agents/skills` 与已存在的宿主目录；只覆盖带 managed 标记的卡。
+- Look Gate 支持 HTML / PPTX / PDF / 视频 / 图片，输出 `look.png`、`look.json`、`MANIFEST.md`；缺渲染工具时明确报错，不冒充已验证。
+- 规则见 `skills/zyx/shared/quality/visual-acceptance.md`；背景与取舍见 `docs/research/omarchy-integration.md`。
+
 ## 规范对齐
 
 遵循开放 Agent Skills 规范（agentskills.io）：YAML frontmatter、渐进式披露（元数据 → 正文 → 按需加载 references/scripts/assets）、正文 500 行以内。模板参考 Anthropic agentskills 开放规范与 Google 官方 skills 仓库格式。
 
 ## 版本
 
-当前 `zyx` v1.3.0，变更记录见 [skills/zyx/CHANGELOG.md](skills/zyx/CHANGELOG.md)。
+当前 `zyx` v1.4.0，变更记录见 [skills/zyx/CHANGELOG.md](skills/zyx/CHANGELOG.md)。
 
 ## 许可
 

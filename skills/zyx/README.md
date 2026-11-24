@@ -136,7 +136,7 @@ cp -r skills/zyx skills/video-studio ~/.doubao/agent_mode/workspace/.user_skills
 
 ## 自检与更新
 
-- **自检**：`bash skills/zyx/scripts/doctor.sh`（加 `--online` 额外检查上游网络可达性，`--full` 额外跑 R7 知识库端到端自测）。检查运行依赖、依赖安装状态、文件完整性与悬空引用、调度环境、产物目录可写性、自身版本。
+- **自检**：`bash skills/zyx/scripts/doctor.sh`（加 `--online` 额外检查上游网络可达性，`--full` 额外跑 R7 知识库端到端自测）。检查运行依赖、依赖安装状态、文件完整性与悬空引用、调度环境、产物目录可写性、自身版本；并检查 Look Gate 渲染工具、Omarchy 握手与 Context Card。
 - **首次触发自注册**：`scripts/env-registry.sh` 探测 cron / launchd / systemd 并幂等注册后台周检；`--status` 查看状态，`--unregister` 卸载。纯云端无调度器环境会降级提示在定时任务中心建任务。
 - **静默更新**：`scripts/updater.sh` 对清单内 git 依赖做 ff-only 快进 + 浅克隆兜底重置（旧 HEAD 备份），dbs 只比对不覆盖；失败计数、连续失败提示与 drift 报告（`--check-drift`）。zyx 自身拉取远端版本号与 HEAD SHA 同本地比对，落后/超前/最新写入 `state/self-version.json`；自身快进覆盖仍需人工确认，不自动执行。
 - **环境变量**：`ZYX_REPO` 覆盖自身远端仓库，`ZYX_BRANCH` 覆盖远端分支（默认 `main`），`ZYX_FAIL_THRESHOLD` 覆盖连续失败阈值（默认 3），`ZYX_EXTRA_SKILL_DIRS` 追加额外 Skill 探测目录。

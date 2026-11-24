@@ -63,6 +63,10 @@ def main():
     env = {"ZYX_STATE_DIR": state, "WIKI_SESSION_ID": "selftest-s1"}
     env2 = {"ZYX_STATE_DIR": state, "WIKI_SESSION_ID": "selftest-s2"}
     env_no_lock = {"ZYX_STATE_DIR": state, "WIKI_SESSION_ID": "selftest-s1"}
+    ctx_dir = os.path.join(root, "ctx-skills")
+    env_ctx = {"ZYX_STATE_DIR": state, "ZYX_CONTEXT_DIRS": ctx_dir}
+    unmanaged_dir = os.path.join(root, "unmanaged-skills")
+    env_unmanaged = {"ZYX_STATE_DIR": state, "ZYX_CONTEXT_DIRS": unmanaged_dir}
 
     try:
         # 1. 建库
@@ -125,6 +129,23 @@ def main():
         code, out, _ = run(["brief", "--with-lint"], env)
         check("brief 可带巡检摘要", code == 0 and "巡检" in out, f"exit={code}")
 
+        # 8.6 跨宿主 context 卡
+        code, out, _ = run(["context"], env_ctx)
+        check("context 可预览技能卡", code == 0 and "zyx-context" in out and "brief --vault" in out, f"exit={code}")
+        code, _, _ = run(["context", "--install"], env_ctx)
+        card = os.path.join(ctx_dir, "zyx-context", "SKILL.md")
+        check("context 可安装到宿主目录", code == 0 and os.path.isfile(card), f"exit={code}")
+        text = open(card, encoding="utf-8").read() if os.path.isfile(card) else ""
+        check("context 卡指向活动库与简报命令", "demo" in text and "先读简报" in text)
+        code, _, _ = run(["context", "--install"], env_ctx)
+        check("context 重复安装幂等", code == 0, f"exit={code}")
+        os.makedirs(os.path.join(unmanaged_dir, "zyx-context"), exist_ok=True)
+        open(os.path.join(unmanaged_dir, "zyx-context", "SKILL.md"), "w", encoding="utf-8").write("用户自己的卡\n")
+        code, _, _ = run(["context", "--install"], env_unmanaged)
+        check("context 不覆盖非托管同名卡", code == 1, f"exit={code}")
+        code, _, _ = run(["context", "--remove"], env_ctx)
+        check("context --remove 只删托管卡", code == 0 and not os.path.exists(card), f"exit={code}")
+
         # 9. lint
         code, out, _ = run(["list"], env)
         check("库列表可读", code == 0 and "demo" in out, f"exit={code}")
@@ -159,6 +180,13 @@ def main():
         check("用户既有笔记未被改动", os.path.isfile(os.path.join(obs, "notes", "mine.md")))
         code, _, _ = run(["mount", "obs2", obs, "--provision"], env)
         check("--provision 才补骨架", code == 0 and os.path.isdir(os.path.join(obs, "raw")), f"exit={code}")
+
+        # 11.5 切换活动库自动刷新 context 卡
+        run(["context", "--install"], env_ctx)
+        code, out, _ = run(["use", "obs1"], env_ctx)
+        card_text = open(os.path.join(ctx_dir, "zyx-context", "SKILL.md"), encoding="utf-8").read()
+        check("use 切换后 context 卡自动跟随", code == 0 and "obs1" in card_text, f"exit={code}")
+        run(["use", "demo"], env_ctx)
 
         # 12. 收尾
         run(["unlock", "demo"], env)

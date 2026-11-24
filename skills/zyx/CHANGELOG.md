@@ -2,6 +2,24 @@
 
 本文件记录 zyx 总调度台的版本变更。版本号遵循 SemVer（MAJOR.MINOR.PATCH）。
 
+## 1.4.0 — 2026-11-24
+
+### 新增
+- **Context Card（状态投影技能卡）**：`wiki.py context [--install|--remove]` 把 R7 活动库投影成 `zyx-context/SKILL.md`，装进 `~/.agents/skills` 与已存在的宿主目录；`use` 切换活动库时自动刷新托管卡，换 agent 不失忆。只覆盖带 managed 标记的卡，拒绝覆盖用户同名技能。
+- **Look Gate（视觉验收）**：`scripts/look.py` 把 HTML / PPTX / PDF / 视频 / 图片渲染成 `look.png` contact sheet，写 `look.json` 与 `MANIFEST.md`；`shared/quality/visual-acceptance.md` 规定“agent 亲自看图才算验收”。缺渲染工具时明确报错，不冒充已验证。
+- **Omarchy 只读握手**：`scripts/omarchy-bridge.py status` 报告 Omarchy 版本、主题、默认 agent、共享 skills 目录，以及 ZYX/R7/context 卡是否就位；`--install-context` 一条命令装卡。不写系统配置、不新增 R8 路由。
+- **Look 自测** `scripts/look-selftest.py`：目录拼图 / JSON / MANIFEST / unsupported / 缺失文件 6 项；`doctor --full` 调用。
+- **回归用例** E19–E21：视觉产物先看后交、context 跨宿主、Omarchy 握手不抢路由。
+
+### 变更
+- `wiki-selftest.py` 由 34 项扩为 41 项（context 预览/安装/幂等/防覆盖/移除/换库刷新）。
+- `artifact-dir.sh` 白名单加 `look`；`qa-audit.md` 加视觉验收必过项。
+- `wiki-vault` metadata 版本 1.2.0；`zyx` 版本 1.4.0。
+
+### 边界
+- Look Gate 依赖 chromium/playwright、libreoffice、pdftoppm、ffmpeg、Pillow/ImageMagick；缺工具时在 MANIFEST 标“未做视觉验收”，不得宣称已验证。
+- Omarchy 只做握手；`/usr/share/omarchy` 只读，`~/.agents/AGENTS.md` 不自动写。
+
 ## 1.3.0 — 2026-11-24
 
 ### 新增

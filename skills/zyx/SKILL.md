@@ -5,7 +5,7 @@ license: MIT
 compatibility: 兼容 Claude Code / Codex / OpenClaw / Hermes / Kiro / Cline 等 Agent Skills 标准宿主；引用外部蒸馏器路径，需与它们同机安装。
 metadata:
   author: "ZYX"
-  version: "1.3.0"
+  version: "1.4.0"
   layer: "1-router"
   schema: "agentskills.io"
 allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
@@ -91,11 +91,12 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 - 增量认知校验：先写下已有认知，再专找反例与增量（`shared/verification/incremental-check.md`）。
 - 三重交叉验证：来源充分性 / 可执行性 / 任务增益（`shared/verification/triple-verification.md`）。
 - 质检与审计：发布前过清单，留审计痕迹（`shared/quality/qa-audit.md`）。
+- 视觉验收：PPT/HTML/PDF/封面/分镜等会被人看见的产物，交付前先渲染成图并由 agent 亲自看（`shared/quality/visual-acceptance.md`）。
 - 来源可信度标注：一手 / 二手 / 推断分级（`shared/credibility/source-grading.md`）。
 - 产物规范与压测：目录结构、命名、Darwin 式用例（`shared/artifacts/`、`shared/darwin/`）。
 
 ### Step 5 · 收口产物并回传桌面
-产物先落到本机桌面产物根目录，**按生成它的 Skill 名分一级子目录**（知识库落 `wiki/<slug>/`，库内自带 raw/ 与 wiki/）（规则见 `references/artifact-layout.md` 与 `shared/artifacts/convention.md`）。全部产物就位后，zyx 统一汇总路径清单回传给用户：每个产物标注来源蒸馏器、版本、校验状态与所在目录。回传前按 `shared/quality/qa-audit.md` 做一次交付前核对。
+产物先落到本机桌面产物根目录，**按生成它的 Skill 名分一级子目录**（知识库落 `wiki/<slug>/`，库内自带 raw/ 与 wiki/）（规则见 `references/artifact-layout.md` 与 `shared/artifacts/convention.md`）。全部产物就位后，zyx 统一汇总路径清单回传给用户：每个产物标注来源蒸馏器、版本、校验状态与所在目录。回传前按 `shared/quality/qa-audit.md` 做一次交付前核对；视觉产物还要跑 `look.py` 并 Read `look.png`，没有看过的图不算验收通过。
 
 ## 3. 边界（zyx 不做什么）
 
@@ -104,8 +105,19 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 - 不做无确认的远端动作（建仓、push、tag、Release 单独授权，见 `references/routing-table.md` 发布段）。
 - 不把书摘、读后感、作者人设扮演交给仓颉（那是女娲的活）；路由表已写明边界。
 - 知识库层不写 HTML、不装 Obsidian 插件、不改用户既有 Obsidian 库结构；同步接口仅预留。
+- 本机环境/桌面（Omarchy/Hyprland）操作不属于七类原料：只做只读握手，执行交给 Omarchy 自己的 skill，不新增 R8。
 
-## 4. 后台静默更新机制
+## 4. 与 Omarchy 的握手（可选，不改七类路由）
+
+如果本机是 Omarchy（DHH 的 agentic Linux 发行版），ZYX 不新增 R8 路由，只做三件事：
+
+- `omarchy-bridge.py status`：只读报告 Omarchy 版本、主题、默认 agent、共享 skills 目录，以及 ZYX/R7/context 卡是否就位。
+- Context Card：把 R7 活动库投影成 `zyx-context` 技能卡，装进 `~/.agents/skills` 与已存在的宿主 skills 目录；换库自动刷新。
+- Look Gate：视觉产物先渲染再交付（见 `shared/quality/visual-acceptance.md`）。
+
+边界：不改 `/usr/share/omarchy`、不自动建任务、不写 `~/.agents/AGENTS.md`；环境操作交给 Omarchy 自己的 skill。
+
+## 5. 后台静默更新机制
 
 - **首次自注册**：首次调用 zyx 时 `env-registry.sh` 探测环境并注册周检任务，之后在后台持续运行；注册状态在 `state/registry.json`，重复调用幂等不重复注册。
 - **静默更新器** `updater.sh`：每周日 18:00（或手动）执行：
@@ -116,12 +128,14 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 - **日志**：更新过程写入 `state/updater.log`；`--silent` 模式不在前台打印。
 - **安全边界**：只快进本地已有仓库，不删除未提交改动、不访问远端写接口、不推送内容；非快进失败自动保留现状。手动只读检查可运行 `bash scripts/check-updates.sh`；环境就绪/缺项/完整性可运行 `bash scripts/doctor.sh [--online]`。
 
-## 5. 运维指令（管理类，不参与生产路由触发）
+## 6. 运维指令（管理类，不参与生产路由触发）
 
 以下命令属于安装、自检、更新等管理动作，与上面的生产路由分开，不在生产触发词里混用：
 
 - 安装到当前宿主：在仓库根目录运行 `bash scripts/install.sh`（`--dir <目录>` 指定目标；`--install-deps` 同时装外部 git/npx 依赖；`--list-hosts` 列出候选目录）。
 - 自检：`bash scripts/doctor.sh`（加 `--online` 额外检查上游网络可达性）。
+- 视觉验收：`python3 scripts/look.py <产物> --out <目录>/look`；自测 `python3 scripts/look-selftest.py`。
+- Omarchy 握手：`python3 scripts/omarchy-bridge.py status [--json]`；安装 context 卡 `python3 scripts/omarchy-bridge.py status --install-context`。
 - 手动检查更新：`bash scripts/check-updates.sh`。
 - 查看/注销后台注册：`bash scripts/env-registry.sh --status` / `--unregister`。
 - 云端 Agent 没有本机调度器时，env-registry 会降级提示：在定时任务中心建一条每周日 18:00 的任务，命令为 `bash <zyx目录>/scripts/updater.sh --silent`。

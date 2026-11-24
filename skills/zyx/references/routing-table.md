@@ -60,3 +60,7 @@
 ## 4. 发布与远端动作边界
 
 建远端仓库、push、打 tag、发 Release、公开测试材料，都需要用户在当轮明确授权；未授权时只做本地准备与校验。发布前先按 `../shared/quality/qa-audit.md` 脱敏：不提交密钥、内部路径、本机配置、未脱敏的私密样本与运行记录。
+
+## 5. 环境层例外（Omarchy）
+
+Omarchy / Hyprland / 桌面主题 / 快捷键等请求不是「原料类型」，**不进 R1–R7**：先跑 `../scripts/omarchy-bridge.py status` 做只读握手，再交给 Omarchy 自带的 `omarchy` skill 执行。ZYX 不改 `/usr/share/omarchy`、不自动写 `~/.agents/AGENTS.md`、不新增 R8。

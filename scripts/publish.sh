@@ -9,7 +9,7 @@ set -euo pipefail
 
 REPO_NAME="ZYX"
 VISIBILITY="${1:-public}"
-TAG="${2:-v1.3.0}"
+TAG="${2:-v1.4.0}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 

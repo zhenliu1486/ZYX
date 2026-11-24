@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "zyx_version": "1.3.0",
+  "zyx_version": "1.4.0",
   "description": "ZYX 路由调度台的依赖声明清单。doctor / updater / install 脚本统一从本文件读取，不在脚本里硬编码依赖清单。",
   "host_dirs": [
     "$HOME/.claude/skills",
@@ -166,7 +166,7 @@
       "parent": null,
       "url": null,
       "install": "随 ZYX 仓库内置，安装器自动复制",
-      "notes": "raw/ 只读 → wiki/ 编译的长期知识库；支持挂载已有 Obsidian 库；单写锁禁并行；lint 巡检；git 同步接口预留；豆包 personal agent 适配（where/brief、~/Doubao/wiki 默认根、上传打包）。"
+      "notes": "raw/ 只读 → wiki/ 编译的长期知识库；支持挂载已有 Obsidian 库；单写锁禁并行；lint 巡检；git 同步接口预留；豆包 personal agent 适配（where/brief、~/Doubao/wiki 默认根、上传打包）；跨宿主 context 卡；Look Gate 视觉验收。"
     },
     {
       "id": "DARWIN",
