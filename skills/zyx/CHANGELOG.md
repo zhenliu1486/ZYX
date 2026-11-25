@@ -2,6 +2,27 @@
 
 本文件记录 zyx 总调度台的版本变更。版本号遵循 SemVer（MAJOR.MINOR.PATCH）。
 
+## 1.5.0 — 2026-11-25
+
+### 第一性原理审计修复
+- **安装器原子化**：`scripts/install.sh` 不再先 `rm -rf` 目标目录；改为 stage 复制 → 旧目录备份 → rename 替换，替换失败自动恢复旧版。备份落在 `~/.zyx-backups/install-<时间>-<pid>/`，可用 `ZYX_INSTALL_BACKUP` 覆盖。
+- **路由 fail closed**：`route.sh` 在目标蒸馏器缺失时返回退出码 2，不再“打印未检测到但返回 0”；调用方不会把未解析当成已解析。
+- **Context Card 防覆盖**：`wiki.py context --install` 不只检查 `SKILL.md`，同名目录或同名文件只要不是 ZYX 托管卡就整体拒绝；`use/init/mount` 刷新旧卡失败时只警告，不回滚主操作。
+- **macOS 调度**：`env-registry.sh` 在 Darwin 上优先 `launchd`，避免 cron 受 TCC/省电策略影响不执行；systemd 单元路径加引号。
+- **Look Gate 能力检查**：`doctor.sh` 不再只查 `chromium`/`soffice` 二进制名，改为检查 `chromium` 或 Playwright、`libreoffice` 或 `soffice`，按能力而不是按命令名判断。
+- **`sync-hosts.sh --list-hosts`**：只列候选目录，不再逐个调用安装器。
+
+### 新增
+- `scripts/route-selftest.py`：七类路由映射 + 未知类型拒绝，8 项；`doctor --full` 自动执行。
+- `wiki-selftest.py` 增至 43 项：补“已有非托管同名目录”“同名文件”两类 Context 冲突用例。
+- `doctor.sh` 新增第 12 段路由自测。
+
+### 验证
+- `wiki-selftest.py` 43/43；`route-selftest.py` 8/8；`look-selftest.py` 6/6；`doctor --full` 全部就绪。
+- 原子安装实测：旧目录含自定义文件时被完整备份，新版本正常落位。
+- launchd 分支用 fake `uname`/`launchctl` 模拟注册，plist 与 state 均生成。
+- macOS 真机仍未接通（`SANDBOX_UNAVAILABLE`），Bash 3.2 与 launchd 未在真机复跑。
+
 ## 1.4.1 — 2026-11-24
 
 ### 修复

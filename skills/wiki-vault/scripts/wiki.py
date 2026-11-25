@@ -911,6 +911,7 @@ def context_host_dirs(explicit=None):
 def context_card(v, generated=None):
     """把活动库的状态投影成一张 8–12 行的宿主技能卡。"""
     topic = (v.get("topic") or v["slug"]).replace("|", "\\|")
+    root = str(v.get("root") or "").replace("|", "\\|")
     desc = re.sub(r"\s+", " ", f"读取「{topic}」长期知识库（{v['slug']}）的简报；用户提到「我的知识库 / 我库里 / 接着上次的库 / 我的 wiki」或需要长期背景时先用。")
     qpy = shlex.quote(os.path.abspath(__file__))
     qslug = shlex.quote(v["slug"])
@@ -927,7 +928,7 @@ description: >
 | 项 | 值 |
 |---|---|
 | 库名 | `{v['slug']}` |
-| 位置 | `{v['root']}` |
+| 位置 | `{root}` |
 | 主题 | {topic} |
 | 生成时间 | {generated} |
 
@@ -971,6 +972,19 @@ def is_managed_card(path):
     return CONTEXT_MARKER in read_text(path)
 
 
+def context_conflict(target):
+    """目标已有 zyx-context 目录/文件但不是托管卡 → 返回冲突路径，否则空串。"""
+    path = context_card_path(target)
+    skill_dir = os.path.dirname(path)
+    if os.path.isdir(skill_dir):
+        if not os.path.isfile(path) or not is_managed_card(path):
+            return path
+    elif os.path.exists(skill_dir):
+        # 同名位置是个文件/symlink 到文件，不是目录
+        return skill_dir
+    return ""
+
+
 def write_context_card(target, content):
     path = context_card_path(target)
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -991,8 +1005,11 @@ def refresh_context_cards(data, slug):
     for target in context_host_dirs(None):
         path = context_card_path(target)
         if os.path.isfile(path) and is_managed_card(path):
-            write_context_card(target, content)
-            written.append(path)
+            try:
+                write_context_card(target, content)
+                written.append(path)
+            except Exception as e:
+                print(f"⚠ context 卡刷新失败（{path}）：{e}", file=sys.stderr)
     return written
 
 
@@ -1036,18 +1053,20 @@ def cmd_context(args):
     v = active_vault(data, args.vault)
     content = context_card(v)
     if args.install:
-        conflicts = [
-            context_card_path(t)
-            for t in targets
-            if os.path.exists(context_card_path(t)) and not is_managed_card(context_card_path(t))
-        ]
+        conflicts = [p for p in (context_conflict(t) for t in targets) if p]
         if conflicts:
             print("目标位置已有非 ZYX 托管的同名技能，未覆盖：", file=sys.stderr)
             for p in conflicts:
                 print(f"  {p}", file=sys.stderr)
             print("先手动移走该目录，或改用 --dir 指定其他目录。", file=sys.stderr)
             return 1
-        paths = [write_context_card(t, content) for t in targets]
+        paths = []
+        for t in targets:
+            try:
+                paths.append(write_context_card(t, content))
+            except Exception as e:
+                print(f"安装 context 卡失败（{t}）：{e}", file=sys.stderr)
+                return 1
         if args.json:
             print(json.dumps({"action": "install", "name": CONTEXT_SKILL_NAME, "slug": v["slug"],
                               "root": v["root"], "paths": paths}, ensure_ascii=False, indent=2))

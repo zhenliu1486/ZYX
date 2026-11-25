@@ -170,7 +170,21 @@ else
   echo "  ⚠ 缺少 look.py（视觉产物验收不可用；重装 install.sh 可补）"
   warn=1
 fi
-for c in chromium soffice pdftoppm ffmpeg; do
+if command -v chromium >/dev/null 2>&1 || command -v chromium-browser >/dev/null 2>&1 || command -v google-chrome >/dev/null 2>&1; then
+  echo "  ✅ HTML 渲染器：chromium 可用"
+elif python3 -c 'import playwright' >/dev/null 2>&1; then
+  echo "  ✅ HTML 渲染器：playwright 可用"
+else
+  echo "  ⚠ 缺少 HTML 渲染器（chromium / playwright；HTML 无法渲染）"
+  warn=1
+fi
+if command -v soffice >/dev/null 2>&1 || command -v libreoffice >/dev/null 2>&1; then
+  echo "  ✅ PPTX/PDF 渲染器：libreoffice/soffice 可用"
+else
+  echo "  ⚠ 缺少 libreoffice/soffice（PPTX 无法渲染）"
+  warn=1
+fi
+for c in pdftoppm ffmpeg; do
   if command -v "$c" >/dev/null 2>&1; then
     echo "  ✅ $c 可用"
   else
@@ -239,6 +253,19 @@ if [ -n "$WV" ] && [ -f "$WV/scripts/wiki.py" ]; then
   fi
 else
   echo "  ℹ 未检测到 wiki-vault"
+fi
+echo
+
+echo "## 12. 路由自测（--full）"
+if [ "$FULL" -eq 1 ] && [ -f "$SCRIPT_DIR/route-selftest.py" ]; then
+  python3 "$SCRIPT_DIR/route-selftest.py"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    echo "  ❌ route 自测失败"
+    warn=1
+  fi
+else
+  echo "  ℹ 跳过（仅 --full 运行）"
 fi
 echo
 

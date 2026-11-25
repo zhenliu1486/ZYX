@@ -31,7 +31,8 @@ log() { echo "[env-registry] $*"; }
 UPDATER_ESC="$(printf '%q' "$UPDATER")"
 
 detect_scheduler() {
-  # 依次判断本机可用的调度器，输出名称
+  # macOS 优先 launchd：cron 在 macOS 受 TCC/省电策略影响，周检可能不跑
+  if [ "$(uname -s)" = "Darwin" ] && command -v launchctl >/dev/null 2>&1; then echo "launchd"; return 0; fi
   if command -v crontab >/dev/null 2>&1 && [ -d "$HOME" ]; then echo "cron"; return 0; fi
   if command -v launchctl >/dev/null 2>&1; then echo "launchd"; return 0; fi
   if command -v systemctl >/dev/null 2>&1 && [ -d "$HOME/.config/systemd/user" ]; then echo "systemd"; return 0; fi
@@ -51,7 +52,7 @@ EOF
 
 register_cron() {
   local line="$CRON_MARKER"
-  local job="$WEEKLY_MIN $WEEKLY_HOUR * * 0 $UPDATER_ESC --silent >> \"$STATE_DIR/updater.log\" 2>&1 $line"
+  local job="$WEEKLY_MIN $WEEKLY_HOUR * * 0 /bin/bash $UPDATER_ESC --silent >> \"$STATE_DIR/updater.log\" 2>&1 $line"
   # 去重：先删旧的 zyx 条目
   local current; current="$(crontab -l 2>/dev/null | grep -v "$CRON_MARKER" || true)"
   ( [ -n "$current" ] && echo "$current"; echo "$job" ) | crontab -
@@ -103,7 +104,7 @@ Description=zyx silent updater
 
 [Service]
 Type=oneshot
-ExecStart=/bin/bash $UPDATER --silent
+ExecStart=/bin/bash "$UPDATER" --silent
 EOF
   cat > "$dir/$timer" <<EOF
 [Unit]

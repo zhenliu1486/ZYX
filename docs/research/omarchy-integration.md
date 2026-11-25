@@ -130,7 +130,7 @@ python3 scripts/theme-palette.py --format css
 
 | 落地项 | 实现 | 验收 |
 |---|---|---|
-| Context Card | `wiki.py context --install/--remove`；`use` 切换自动刷新托管卡；只覆盖 managed 卡 | R7 自测 41/41（含预览/安装/幂等/防覆盖/移除/换库刷新） |
+| Context Card | `wiki.py context --install/--remove`；`use` 切换自动刷新托管卡；只覆盖 managed 卡 | R7 自测 43/43（含预览/安装/幂等/防覆盖/移除/换库刷新） |
 | Look Gate | `scripts/look.py` 渲染 HTML/PPTX/PDF/视频/图片成 `look.png`，写 `look.json` + `MANIFEST.md`；`shared/quality/visual-acceptance.md` 规定必须亲自看图 | Look 自测 6/6；实测 HTML/PPTX/图片均出图 |
 | Omarchy 握手 | `scripts/omarchy-bridge.py status` 只读报告版本/主题/默认 agent/共享目录/ZYX 状态；`--install-context` 一条命令装卡 | 用 fake Omarchy 目录验证版本/主题/agent 可读；未装时正常降级 |
 | 医生检查 | `doctor.sh` 新增第 9/10/11 段：Look Gate、Omarchy 握手、Context Card | `doctor --full` 全绿 |

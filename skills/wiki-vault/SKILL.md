@@ -1,11 +1,11 @@
 ---
 name: wiki-vault
-description: 长期知识库（个人/领域 Wiki）维护入口。承接「建一个关于 X 的知识库」「把这篇/这本书/这段转写加进我的 X 库」「我库里关于 X 都有什么结论」「体检一下我的库」这类需要跨会话累积、反复摄入、库内检索的请求：管理 raw/ 只读原料层与 wiki/ 编译知识层，产出互为链接的 Obsidian Markdown（摘要页/实体页/概念页/对比页/综述页），维护主索引、活动日志与会话热缓存，并提供库健康巡检。已建好的 Obsidian 库可直接挂载，不搬动不重构。不替代一次性拆书（R3）、人物/行业深蒸馏（R1/R2）、当下问题诊断（R4）与产物迭代（R6）。
+description: 长期知识库（个人/领域 Wiki）维护入口。承接「建一个关于 X 的知识库」「把这篇/这本书/这段转写加进我的 X 库」「我库里关于 X 都有什么结论」「体检一下我的库」这类需要跨会话累积、反复摄入、库内检索的请求：管理 raw/ 只读原料层与 wiki/ 编译知识层，产出互为链接的 Obsidian Markdown（摘要页/实体页/概念页/对比页/综述页），维护主索引、活动日志与会话热缓存，并提供库健康巡检；可生成跨宿主 `zyx-context` 技能卡，让其他 agent 直接读到库位置与简报命令。已建好的 Obsidian 库可直接挂载，不搬动不重构。不替代一次性拆书（R3）、人物/行业深蒸馏（R1/R2）、当下问题诊断（R4）与产物迭代（R6）。
 license: MIT
 compatibility: 兼容 Claude Code / Codex / OpenClaw / Cursor / Gemini CLI / OpenCode 等 Agent Skills 标准宿主；仅依赖 Python 3 标准库与 Bash，无外部必需依赖；Obsidian 为可选阅读前端，不内置插件配置。
 metadata:
   author: "ZYX"
-  version: "1.2.0"
+  version: "1.3.0"
   layer: "2-capability"
   schema: "agentskills.io"
 allowed-tools: Read, Write, Edit, Bash
@@ -118,7 +118,7 @@ python3 scripts/wiki.py sync --status
 ## 8. 可选模板与自测
 
 - `assets/templates/`：五类页面模板（`{{title}}` / `{{slug}}` / `{{date}}` 占位），可复制进 Obsidian 模板文件夹；R7 不内置插件配置，`new-page` 已能直接生成同结构。
-- `scripts/wiki-selftest.py`：41 项端到端回归（建库/锁/并发/重复/回链/归档/检索/lint/挂载/sync），临时库跑完即清理；`doctor.sh --full` 会调用它。
+- `scripts/wiki-selftest.py`：43 项端到端回归（建库/锁/并发/重复/回链/归档/检索/lint/挂载/sync），临时库跑完即清理；`doctor.sh --full` 会调用它。
 
 ## 9. 跨宿主 Context Card
 
@@ -158,6 +158,6 @@ python3 scripts/wiki.py sync --status
 
 ## 13. 决策记录
 
-- 2026-11-24：新增 `context` 状态投影卡（`zyx-context`）与跨宿主安装/自动刷新；selftest 41 项；版本 1.2.0。
+- 2026-11-24：新增 `context` 状态投影卡（`zyx-context`）与跨宿主安装/自动刷新；selftest 43 项；版本 1.3.0。
 - 2026-11-24：落地豆包 personal agent 适配——豆包环境默认库根改 `~/Doubao/wiki`，新增 `where`/`brief` 供记忆注入，新增上传打包脚本与「知识库管家」人设卡；不接小豆私有接口、不自动建任务。
 - 2026-11-24：确认为独立 R7 路由（不并入 R3）；支持挂载已有 Obsidian 库；只做 Obsidian Markdown；**不设覆盖度闸门**；显式单写、禁并行、多会话写同一库；预留 git 同步接口；页面晋级 Skill 复用三重验证 + 独立复用价值。

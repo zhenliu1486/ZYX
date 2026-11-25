@@ -1,11 +1,11 @@
 ---
 name: zyx
-description: zyx 总调度台（薄壳路由入口）。当用户要把人、行业、长内容（书/长视频/播客/课程/访谈）蒸馏成 Skill，处理当下商业/文案/决策问题，做影视/短剧/漫剧内容生产，对已有产物二次迭代，或维护一个长期累积的个人/领域知识库时使用。只判断原料属于哪一类并转发给对应蒸馏器/聚合层，不自行产出方法论；产物按生成它的 Skill 名分目录落盘后统一回传。生产类触发词：zyx、调度、路由、造 skill、蒸馏、拆书、做个 X 的 master、我是 X 行业、诊断我的生意、这篇文案行不行、写短剧剧本、出分镜、改这版产物、建个知识库、把这篇加进我的库、我库里关于 X、体检我的库。
+description: zyx 总调度台（薄壳路由入口）。当用户要把人、行业、长内容（书/长视频/播客/课程/访谈）蒸馏成 Skill，处理当下商业/文案/决策问题，做影视/短剧/漫剧内容生产，对已有产物二次迭代，或维护一个长期累积的个人/领域知识库时使用。只判断原料属于哪一类并转发给对应蒸馏器/聚合层，不自行产出方法论；产物按生成它的 Skill 名分目录落盘后统一回传。生产类触发词：zyx、调度、路由、造 skill、蒸馏、拆书、做个 X 的 master、我是 X 行业、诊断我的生意、这篇文案行不行、写短剧剧本、出分镜、改这版产物、建个知识库、把这篇加进我的库、我库里关于 X、体检我的库、把库带到别的 agent、看这版 PPT 或封面。
 license: MIT
 compatibility: 兼容 Claude Code / Codex / OpenClaw / Hermes / Kiro / Cline 等 Agent Skills 标准宿主；引用外部蒸馏器路径，需与它们同机安装。
 metadata:
   author: "ZYX"
-  version: "1.4.1"
+  version: "1.5.0"
   layer: "1-router"
   schema: "agentskills.io"
 allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch

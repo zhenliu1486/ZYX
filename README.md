@@ -60,7 +60,7 @@ cp -r skills/zyx ~/.claude/skills/zyx
 cp -r skills/video-studio ~/.claude/skills/video-studio
 ```
 
-其他宿主：`~/.openclaw/skills`、`~/.agents/skills`、`~/.codex/skills`，或对应 Agent 的 skills 目录。macOS 自带的 Bash 3.2 已做兼容；同步脚本见 `scripts/sync-hosts.sh`。
+其他宿主：`~/.openclaw/skills`、`~/.agents/skills`、`~/.codex/skills`，或对应 Agent 的 skills 目录。macOS 自带的 Bash 3.2 已做兼容；同步脚本见 `scripts/sync-hosts.sh`。安装器先备份旧版到 `~/.zyx-backups/` 再原子替换，不会把宿主里的旧 Skill 直接删掉。
 
 依赖：Bash、git；仓颉本体另需 Python 3.10+ 与 PyYAML。首次调用 zyx 时会自动探测环境并注册后台周检（幂等）。
 
@@ -102,7 +102,7 @@ python3 skills/zyx/scripts/look.py deck.pptx --out ./look
 
 ## 版本
 
-当前 `zyx` v1.4.1，变更记录见 [skills/zyx/CHANGELOG.md](skills/zyx/CHANGELOG.md)。
+当前 `zyx` v1.5.0，变更记录见 [skills/zyx/CHANGELOG.md](skills/zyx/CHANGELOG.md)；第一性原理审计见 [docs/research/zyx-first-principles-audit.md](docs/research/zyx-first-principles-audit.md)。
 
 ## 许可
 

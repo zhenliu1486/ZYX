@@ -143,6 +143,17 @@ def main():
         open(os.path.join(unmanaged_dir, "zyx-context", "SKILL.md"), "w", encoding="utf-8").write("用户自己的卡\n")
         code, _, _ = run(["context", "--install"], env_unmanaged)
         check("context 不覆盖非托管同名卡", code == 1, f"exit={code}")
+        empty_dir = os.path.join(root, "empty-skills")
+        os.makedirs(os.path.join(empty_dir, "zyx-context"), exist_ok=True)
+        code, _, _ = run(["context", "--install"],
+                         {"ZYX_STATE_DIR": state, "ZYX_CONTEXT_DIRS": empty_dir})
+        check("context 不写入已存在的非托管同名目录", code == 1, f"exit={code}")
+        file_dir = os.path.join(root, "file-skills")
+        os.makedirs(file_dir, exist_ok=True)
+        open(os.path.join(file_dir, "zyx-context"), "w", encoding="utf-8").write("占位文件\n")
+        code, _, _ = run(["context", "--install"],
+                         {"ZYX_STATE_DIR": state, "ZYX_CONTEXT_DIRS": file_dir})
+        check("context 不覆盖同名文件", code == 1, f"exit={code}")
         code, _, _ = run(["context", "--remove"], env_ctx)
         check("context --remove 只删托管卡", code == 0 and not os.path.exists(card), f"exit={code}")
 

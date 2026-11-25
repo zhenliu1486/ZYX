@@ -82,6 +82,8 @@ bash scripts/install.sh --list-hosts
 bash scripts/sync-hosts.sh
 ```
 
+`install.sh` 会先把宿主里的旧版备份到 `~/.zyx-backups/install-<时间>-<pid>/`，再用 stage 目录原子替换；替换失败自动恢复旧版。可用 `ZYX_INSTALL_BACKUP` 改备份根目录。
+
 ### 方式二：手工复制
 
 把 `skills/` 下需要的 Skill 目录复制到任一宿主的 skills 目录：

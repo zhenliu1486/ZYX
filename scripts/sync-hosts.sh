@@ -10,6 +10,10 @@ DEPS_PY="$ROOT/skills/zyx/scripts/deps.py"
 INSTALL="$ROOT/scripts/install.sh"
 if [ "$#" -gt 0 ]; then EXTRA=("$@"); else EXTRA=(); fi
 
+if [ "${1:-}" = "--list-hosts" ]; then
+  bash "$INSTALL" --list-hosts
+  exit 0
+fi
 if [ ! -f "$DEPS_PY" ] || [ ! -f "$INSTALL" ]; then
   echo "找不到安装器：$ROOT" >&2
   exit 2

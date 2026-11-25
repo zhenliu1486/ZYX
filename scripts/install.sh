@@ -78,26 +78,60 @@ mkdir -p "$TARGET_DIR"
 if [ ! -w "$TARGET_DIR" ]; then
   echo "目标目录不可写: $TARGET_DIR" >&2; exit 1
 fi
+# 防止把仓库 skills 自己当成安装目标（会 mv 掉源目录）
+TARGET_REAL="$(cd "$TARGET_DIR" && pwd)"
+SKILLS_REAL="$(cd "$SKILLS_SRC" && pwd)"
+case "$TARGET_REAL" in
+  "$SKILLS_REAL"|"$SKILLS_REAL"/*)
+    echo "目标目录不能是仓库 skills 目录本身或其子目录: $TARGET_REAL" >&2
+    exit 1 ;;
+esac
 
 echo "===== ZYX 安装 ====="
 echo "仓库根目录: $ROOT"
 echo "目标 skills 目录: $TARGET_DIR"
 echo
 
-# 1. 复制内置 Skill
+# 1. 复制内置 Skill（原子安装：先落 stage，再备份旧目录，最后 rename 替换）
 echo "## 复制内置 Skill"
+BACKUP_ROOT="${ZYX_INSTALL_BACKUP:-$HOME/.zyx-backups}"
+STAMP="$(date +%Y%m%d-%H%M%S)-$$"
+STAGE=""
+cleanup_stage() { [ -n "${STAGE:-}" ] && rm -rf "$STAGE"; }
+trap cleanup_stage EXIT INT TERM
+
 for src in "$SKILLS_SRC"/*/; do
   name="$(basename "$src")"
   dest="$TARGET_DIR/$name"
-  rm -rf "$dest"
-  mkdir -p "$dest"
-  # 排除运行态/版本控制/日志
-  (cd "$src" && find . -type d \( -name state -o -name .git -o -name __pycache__ \) -prune -o -type f -print0 \
-    | while IFS= read -r -d '' f; do
-        rel="${f#./}"
-        mkdir -p "$dest/$(dirname "$rel")"
-        cp "$src/$rel" "$dest/$rel"
-      done)
+  STAGE="$TARGET_DIR/.zyx-stage-$name-$$"
+  rm -rf "$STAGE"
+  mkdir -p "$STAGE"
+  cp -R "$src/." "$STAGE/"
+  rm -rf "$STAGE/state" "$STAGE/.git" "$STAGE/__pycache__"
+  find "$STAGE" -name '*.pyc' -type f -delete 2>/dev/null || true
+
+  backup_parent=""
+  if [ ! -f "$STAGE/SKILL.md" ]; then
+    echo "  ❌ $name 缺少 SKILL.md，跳过安装" >&2
+    rm -rf "$STAGE"; STAGE=""; exit 1
+  fi
+
+  if [ -e "$dest" ]; then
+    backup_parent="$BACKUP_ROOT/$STAMP"
+    mkdir -p "$backup_parent"
+    if ! mv "$dest" "$backup_parent/$name"; then
+      echo "  ❌ $name 旧目录备份失败，未覆盖" >&2
+      rm -rf "$STAGE"; STAGE=""; exit 1
+    fi
+    echo "  已备份旧版: $backup_parent/$name"
+  fi
+
+  if ! mv "$STAGE" "$dest"; then
+    echo "  ❌ $name 安装失败，尝试恢复旧版" >&2
+    if [ -n "$backup_parent" ] && [ -d "$backup_parent/$name" ]; then mv "$backup_parent/$name" "$dest"; fi
+    rm -rf "$STAGE"; STAGE=""; exit 1
+  fi
+  STAGE=""
   echo "  ✅ $name"
 done
 echo
