@@ -104,7 +104,7 @@ python3 skills/zyx/scripts/look.py deck.pptx --out ./look
 
 ## 版本
 
-当前 `zyx` v1.6.0，变更记录见 [skills/zyx/CHANGELOG.md](skills/zyx/CHANGELOG.md)；第一性原理审计见 [docs/research/zyx-first-principles-audit.md](docs/research/zyx-first-principles-audit.md)。
+当前 `zyx` v1.6.1，变更记录见 [skills/zyx/CHANGELOG.md](skills/zyx/CHANGELOG.md)；第一性原理审计见 [docs/research/zyx-first-principles-audit.md](docs/research/zyx-first-principles-audit.md)。
 
 ## 许可
 

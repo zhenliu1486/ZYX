@@ -84,6 +84,10 @@ def main():
     p.add_argument("--index-broken", action="store_true")
     p.add_argument("--state", choices=list(WEIGHTS.keys()), default=None)
     p.add_argument("--json", action="store_true")
+    p.add_argument("--locked-limit-up", action="store_true",
+                   help="闸门6：候选标的前一交易日为一字板（开=高=低=收=涨停价、换手<2%%），本轮作废")
+    p.add_argument("--event-driven", action="store_true",
+                   help="闸门7：候选标的处于摘帽/复牌/异常波动/近5日两次以上龙虎榜期间，仓位上限 10%%")
     a = p.parse_args()
 
     scores = {"tech": a.tech, "flow": a.flow, "theme": a.theme, "sent": a.sent}
@@ -105,6 +109,15 @@ def main():
             action, cap = act, pos
             break
 
+    gate_notes = []
+    if a.event_driven:
+        cap = min(cap, 10)
+        action = action + "（事件驱动，仓位上限 10%）"
+        gate_notes.append("闸门7 事件驱动：仓位上限 10%；1000 元级资金等同不参与")
+    if a.locked_limit_up:
+        action, cap = "标的本轮作废（前一日一字板，不可买）", 0
+        gate_notes.append("闸门6 可买性：一字板买不到，移出本轮候选池，不给买点")
+
     out = {
         "state": STATE_CN[state],
         "state_key": state,
@@ -117,6 +130,7 @@ def main():
         "final_score": final,
         "action": action,
         "position_cap_pct": cap,
+        "gate_notes": gate_notes,
     }
 
     if a.json:
@@ -131,6 +145,8 @@ def main():
         print(f"  - {n}")
     print(f"综合分 S = {final}")
     print(f"结论：{action}｜总仓位上限 {cap}%")
+    for g in gate_notes:
+        print(f"  ⚠ {g}")
     print("单票上限 20%，同题材合计上限 40%（与总仓位上限取小）")
 
 

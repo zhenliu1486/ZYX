@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "zyx_version": "1.6.0",
+  "zyx_version": "1.6.1",
   "description": "ZYX 路由调度台的依赖声明清单。doctor / updater / install 脚本统一从本文件读取，不在脚本里硬编码依赖清单。",
   "host_dirs": [
     "$HOME/.claude/skills",
@@ -189,7 +189,7 @@
       "parent": null,
       "url": null,
       "install": "随 ZYX 仓库内置，安装器自动复制",
-      "notes": "四维加权总控：市场状态判权重 → 一致性校验 → 一票否决闸门 → 仓位映射 → 到日到时段执行方案；score.py 做确定性计算。"
+      "notes": "四维加权总控：资格预筛（代码三向核对/事件扫描/一字板可买性/流动性/连板位置）→ 状态判权重 → 一致性校验 → 七道闸门 → 仓位映射 → 到日到时段执行方案；score.py 支持 --locked-limit-up / --event-driven。"
     },
     {
       "id": "R8-sentiment",
