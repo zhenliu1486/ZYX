@@ -81,7 +81,7 @@ bash scripts/package-doubao.sh --only wiki-vault
 
 ## Omarchy 握手、Context Card 与 Look Gate
 
-不新增 R8 路由；只借 Omarchy 的三个工程默认，补 ZYX 的“可验证能力”：
+不新增 R9 路由；只借 Omarchy 的三个工程默认，补 ZYX 的“可验证能力”：
 
 ```bash
 # 1. 只读握手：Omarchy 版本/主题/默认 agent + ZYX/R7/context 卡状态

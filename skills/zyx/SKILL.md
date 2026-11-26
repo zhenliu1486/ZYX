@@ -21,7 +21,7 @@ allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
 zyx/                                  # 第 1 层：入口路由（本目录，薄壳）
 ├── SKILL.md                          #   判断原料类型 → 转发 → 收口产物
 ├── references/
-│   ├── routing-table.md               #   七类原料的判定信号与分流规则
+│   ├── routing-table.md               #   八类原料的判定信号与分流规则
 │   └── artifact-layout.md            #   产物目录命名与回传规范（与 shared/artifacts 对齐）
 ├── deps/
 │   └── manifest.json                 #   依赖声明清单（来源/安装命令/必需可选/子技能归属），doctor/updater/install 共用
@@ -72,7 +72,7 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 - 注册动作只写本机调度配置，不访问远端、不推送内容；调度器不可用时不中断主流程，只记录降级提示。
 
 ### Step 1 · 读取原料，判定类型
-先读用户原话、附件和对话已有事实，不要求用户重复背景。按 `references/routing-table.md` 的判定信号，把原料归入七类之一（R1 人 / R2 行业 / R3 长内容 / R4 当下问题 / R5 内容生产 / R6 产物迭代 / R7 长期知识库 / R8 投资决策）；信号冲突或模糊时，**一次问清**属于哪类，不要猜着分流。
+先读用户原话、附件和对话已有事实，不要求用户重复背景。按 `references/routing-table.md` 的判定信号，把原料归入八类之一（R1 人 / R2 行业 / R3 长内容 / R4 当下问题 / R5 内容生产 / R6 产物迭代 / R7 长期知识库 / R8 投资决策）；信号冲突或模糊时，**一次问清**属于哪类，不要猜着分流。
 
 ### Step 2 · 解析目标蒸馏器的绝对路径
 按 `references/routing-table.md` 末尾的「路径解析」找到对应蒸馏器在本机的安装目录。路径解析顺序：环境变量覆盖 → 本机各宿主 skill 目录探测 → 报错并提示安装。**禁止把蒸馏器方法论复制进 zyx 目录**，zyx 只引用路径。
@@ -108,11 +108,11 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 - 不做无确认的远端动作（建仓、push、tag、Release 单独授权，见 `references/routing-table.md` 发布段）。
 - 不把书摘、读后感、作者人设扮演交给仓颉（那是女娲的活）；路由表已写明边界。
 - 知识库层不写 HTML、不装 Obsidian 插件、不改用户既有 Obsidian 库结构；同步接口仅预留。
-- 本机环境/桌面（Omarchy/Hyprland）操作不属于七类原料：只做只读握手，执行交给 Omarchy 自己的 skill，不新增 R8。
+- 本机环境/桌面（Omarchy/Hyprland）操作不属于 R1–R8 任一类：只做只读握手，执行交给 Omarchy 自己的 skill，不新增 R9。
 
-## 4. 与 Omarchy 的握手（可选，不改七类路由）
+## 4. 与 Omarchy 的握手（可选，不改 R1–R8 路由）
 
-如果本机是 Omarchy（DHH 的 agentic Linux 发行版），ZYX 不新增 R8 路由，只做三件事：
+如果本机是 Omarchy（DHH 的 agentic Linux 发行版），ZYX 不新增 R9 路由，只做三件事：
 
 - `omarchy-bridge.py status`：只读报告 Omarchy 版本、主题、默认 agent、共享 skills 目录，以及 ZYX/R7/context 卡是否就位。
 - Context Card：把 R7 活动库投影成 `zyx-context` 技能卡，装进 `~/.agents/skills` 与已存在的宿主 skills 目录；换库自动刷新。
