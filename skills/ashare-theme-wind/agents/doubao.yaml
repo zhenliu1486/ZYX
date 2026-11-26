@@ -1,0 +1,7 @@
+interface:
+  display_name: "市场风口研判"
+  short_description: "主线题材识别、生命周期定位与个股映射"
+  default_prompt: "使用 $ashare-theme-wind 帮我完成……"
+
+policy:
+  allow_implicit_invocation: true

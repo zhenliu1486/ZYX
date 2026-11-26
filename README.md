@@ -1,6 +1,6 @@
 # ZYX · Agent Skill 总调度台
 
-一个薄壳路由入口 Skill：判断原料属于「人 / 行业 / 长内容 / 当下问题 / 内容生产 / 产物迭代 / 长期知识库」，转发给对应独立 Skill，统一收口产物。被转发的蒸馏器保持独立、各自追上游 git 更新；公共校验、质检、可信度、产物规范与 Darwin 式压测抽成 `shared/` 共享底座。
+一个薄壳路由入口 Skill：判断原料属于「人 / 行业 / 长内容 / 当下问题 / 内容生产 / 产物迭代 / 长期知识库 / 投资决策」，转发给对应独立 Skill，统一收口产物。被转发的蒸馏器保持独立、各自追上游 git 更新；公共校验、质检、可信度、产物规范与 Darwin 式压测抽成 `shared/` 共享底座。
 
 ## 仓库结构
 
@@ -16,7 +16,8 @@ ZYX/
 │   │   ├── shared/          # 第 3 层：共享底座（校验/质检/可信度/规范/压测）
 │   │   └── evals/           # 路由回归用例
 │   ├── video-studio/         # R5 影视/短剧/漫剧制作聚合层（内部路由子技能）
-│   └── wiki-vault/           # R7 长期知识库（raw/ 只读 → wiki/ 编译）
+│   ├── wiki-vault/           # R7 长期知识库（raw/ 只读 → wiki/ 编译）
+│   └── ashare-four-dim-decision/  # R8 投资决策总控（附 4 个四维子技能）
 ├── docs/
 │   ├── doubao/              # 豆包 personal agent 人设卡
 │   ├── research/            # 设计与决策记录
@@ -39,8 +40,9 @@ ZYX/
 | 影视/短剧/漫剧制作 | `video-studio` 聚合层 | 本仓库 `skills/video-studio` |
 | 已有产物二次迭代 | `f2r-feedback-iteration` | 本地打磨类子技能 |
 | 长期知识库（个人/领域 Wiki） | `wiki-vault` | 本仓库 `skills/wiki-vault` |
+| 投资 / 股票 / 波段 / 超短线 | `ashare-four-dim-decision`（+ 情绪/风口/资金/技术四子技能） | 本仓库 `skills/ashare-*` |
 
-> R1–R4 为外部独立蒸馏器，需与本仓库 Skill 同机安装；R5 聚合层随本仓库提供。
+> R1–R4 为外部独立蒸馏器，需与本仓库 Skill 同机安装；R5 / R7 / R8 随本仓库提供。
 
 ## 安装
 
@@ -102,7 +104,7 @@ python3 skills/zyx/scripts/look.py deck.pptx --out ./look
 
 ## 版本
 
-当前 `zyx` v1.5.0，变更记录见 [skills/zyx/CHANGELOG.md](skills/zyx/CHANGELOG.md)；第一性原理审计见 [docs/research/zyx-first-principles-audit.md](docs/research/zyx-first-principles-audit.md)。
+当前 `zyx` v1.6.0，变更记录见 [skills/zyx/CHANGELOG.md](skills/zyx/CHANGELOG.md)；第一性原理审计见 [docs/research/zyx-first-principles-audit.md](docs/research/zyx-first-principles-audit.md)。
 
 ## 许可
 

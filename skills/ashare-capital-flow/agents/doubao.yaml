@@ -1,0 +1,7 @@
+interface:
+  display_name: "资金流向追踪"
+  short_description: "主力、席位、大宗与暗盘资金共振验证"
+  default_prompt: "使用 $ashare-capital-flow 帮我完成……"
+
+policy:
+  allow_implicit_invocation: true

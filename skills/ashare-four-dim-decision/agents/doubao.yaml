@@ -1,0 +1,7 @@
+interface:
+  display_name: "四维操盘决策"
+  short_description: "四维加权+动态权重，输出到日到时段的具体操作方案"
+  default_prompt: "使用 $ashare-four-dim-decision 帮我完成……"
+
+policy:
+  allow_implicit_invocation: true

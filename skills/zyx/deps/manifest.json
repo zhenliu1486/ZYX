@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "zyx_version": "1.5.0",
+  "zyx_version": "1.6.0",
   "description": "ZYX 路由调度台的依赖声明清单。doctor / updater / install 脚本统一从本文件读取，不在脚本里硬编码依赖清单。",
   "host_dirs": [
     "$HOME/.claude/skills",
@@ -179,6 +179,61 @@
       "url": "https://github.com/alchaincyf/darwin-skill",
       "install": "git clone https://github.com/alchaincyf/darwin-skill",
       "notes": "压测行为验证本体；shared/darwin 只引用其口径，不内嵌本体。"
+    },
+    {
+      "id": "R8",
+      "route": "投资决策（A 股波段 / 超短线）",
+      "dir": "ashare-four-dim-decision",
+      "source": "bundled",
+      "required": false,
+      "parent": null,
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "四维加权总控：市场状态判权重 → 一致性校验 → 一票否决闸门 → 仓位映射 → 到日到时段执行方案；score.py 做确定性计算。"
+    },
+    {
+      "id": "R8-sentiment",
+      "route": "R8 情绪偏好周期",
+      "dir": "ashare-sentiment-cycle",
+      "source": "bundled",
+      "required": false,
+      "parent": "ashare-four-dim-decision",
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "情绪八项打分、周期五阶段、风格偏好矩阵、拐点预警。"
+    },
+    {
+      "id": "R8-theme",
+      "route": "R8 市场风口研判",
+      "dir": "ashare-theme-wind",
+      "source": "bundled",
+      "required": false,
+      "parent": "ashare-four-dim-decision",
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "板块强度打分、题材生命周期五段、持续性四问、风口→个股卡位映射。"
+    },
+    {
+      "id": "R8-flow",
+      "route": "R8 资金流向追踪",
+      "dir": "ashare-capital-flow",
+      "source": "bundled",
+      "required": false,
+      "parent": "ashare-four-dim-decision",
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "六层资金口径、暗盘资金六类信号、主力成本区、真伪四象限。"
+    },
+    {
+      "id": "R8-tech",
+      "route": "R8 技术结构分析",
+      "dir": "ashare-technical-structure",
+      "source": "bundled",
+      "required": false,
+      "parent": "ashare-four-dim-decision",
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "三周期框架、七项打分、四个关键价位、风险收益比校验。"
     }
   ]
 }

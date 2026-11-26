@@ -1,0 +1,7 @@
+interface:
+  display_name: "情绪偏好周期"
+  short_description: "A股情绪温度、周期阶段与风格偏好的量化打分"
+  default_prompt: "使用 $ashare-sentiment-cycle 帮我完成……"
+
+policy:
+  allow_implicit_invocation: true

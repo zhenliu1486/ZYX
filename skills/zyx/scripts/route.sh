@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # route.sh — 打印路由决策与被调 Skill 路径（zyx 第 1 层薄壳辅助脚本）
-# 用法: route.sh <原料类型: person|industry|content|problem|production|iterate>
+# 用法: route.sh <原料类型: person|industry|content|problem|production|iterate|wiki|invest>
 # 仅做路径解析与提示，不执行蒸馏、不修改任何文件。
 
 set -euo pipefail
@@ -54,13 +54,20 @@ case "$TARGET" in
     p="$(resolve f2r-feedback-iteration F2R_SKILL_DIR)" || { echo "未检测到 f2r-feedback-iteration" >&2; exit 2; }
     echo "$p"
     ;;
+  invest)
+    echo "路由 → R8 ashare-four-dim-decision 投资决策总控（内部读取四个四维子技能：情绪/风口/资金/技术）"
+    p="$(resolve ashare-four-dim-decision ASHARE_DECISION_DIR)" || { echo "未检测到 ashare-four-dim-decision，请重装 ZYX：https://github.com/zhenliu1486/ZYX" >&2; exit 2; }
+    echo "$p"
+    echo "子技能：ashare-sentiment-cycle / ashare-theme-wind / ashare-capital-flow / ashare-technical-structure（同级目录）"
+    echo "衔接：打分用 scripts/score.py；方案输出到日到时段，不代下单、不承诺收益"
+    ;;
   wiki)
     echo "路由 → R7 wiki-vault 长期知识库（建库/摄入编译/库内问答/健康巡检；可挂载已有 Obsidian 库）"
     p="$(resolve wiki-vault WIKI_VAULT_DIR)" || { echo "未检测到 wiki-vault" >&2; exit 2; }
     echo "$p"
     ;;
   *)
-    echo "用法: route.sh <person|industry|content|problem|production|iterate|wiki>"
+    echo "用法: route.sh <person|industry|content|problem|production|iterate|wiki|invest>"
     echo "  person     人     → 女娲"
     echo "  industry   行业   → 大师"
     echo "  content    长内容 → 仓颉"
@@ -68,6 +75,7 @@ case "$TARGET" in
     echo "  production 内容生产 → video-studio"
     echo "  iterate    产物迭代 → f2r"
     echo "  wiki       长期知识库 → wiki-vault"
+  echo "  invest     投资决策（股票/波段/超短线）→ ashare-four-dim-decision"
     exit 1
     ;;
 esac

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""route-selftest.py — 验证 route.sh 的七类路由映射与路径解析。
+"""route-selftest.py — 验证 route.sh 的八类路由映射与路径解析。
 
 用临时目录伪造每个蒸馏器的 SKILL.md，通过环境变量覆盖路径，逐条断言：
 - 返回码为 0；
@@ -23,6 +23,7 @@ CASES = [
     ("production", "video-studio", "VIDEO_STUDIO_DIR"),
     ("iterate", "f2r-feedback-iteration", "F2R_SKILL_DIR"),
     ("wiki", "wiki-vault", "WIKI_VAULT_DIR"),
+    ("invest", "ashare-four-dim-decision", "ASHARE_DECISION_DIR"),
 ]
 
 
