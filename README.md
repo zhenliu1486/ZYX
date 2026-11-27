@@ -2,6 +2,28 @@
 
 一个薄壳路由入口 Skill：判断原料属于「人 / 行业 / 长内容 / 当下问题 / 内容生产 / 产物迭代 / 长期知识库 / 投资决策」，转发给对应独立 Skill，统一收口产物。被转发的蒸馏器保持独立、各自追上游 git 更新；公共校验、质检、可信度、产物规范与 Darwin 式压测抽成 `shared/` 共享底座。
 
+## 一句话安装
+
+把下面整行复制给任何能执行终端的 AI，或直接贴进终端：
+
+```bash
+curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash
+```
+
+GitHub 备用地址：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh | bash
+```
+
+只装技能本体、不装外部依赖：
+
+```bash
+curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash -s -- --no-deps
+```
+
+> **为什么 AI 会说“没找到”**：ZYX 是 16 个技能的多技能包，根目录故意没有单个 `SKILL.md`；豆包技能安装器只认根级 `SKILL.md`，不会递归找 `skills/`。给 AI 固定 URL，不要让它自己搜 GitHub。豆包上传包与详细说明见 [INSTALL.md](INSTALL.md)。
+
 ## 仓库结构
 
 ```
@@ -22,6 +44,8 @@ ZYX/
 │   ├── doubao/              # 豆包 personal agent 人设卡
 │   ├── research/            # 设计与决策记录
 │   └── promo/               # 对外素材
+├── bootstrap.sh             # 一行安装入口（curl | bash）
+├── INSTALL.md               # 安装说明（含豆包上传包）
 ├── scripts/install.sh        # 一键安装（含内置技能）
 ├── scripts/sync-hosts.sh     # 同步到本机所有已存在的宿主
 ├── scripts/package-doubao.sh # 打成豆包「上传技能」可用的 zip
