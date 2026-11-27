@@ -40,6 +40,8 @@ ZYX/
     ├── cinematic-fight-direction/ # R5 动作/打斗分镜（内置）
     ├── micro-expression-video/    # R5 微表情参数（内置）
     ├── manju-production-pipeline/  # R5 全流程 SOP（内置）
+    ├── director-camera-composition/ # R5 导演运镜/机位/构图（内置）
+    ├── ai-camera-shots/           # R5 镜头语言/分镜/转场（内置，MIT 上游）
     ├── f2r-feedback-iteration/    # R6 负反馈迭代器（内置）
     └── wiki-vault/                # R7 长期知识库（内置：注册表/单写锁/lint 巡检）
 ```
@@ -52,7 +54,7 @@ ZYX/
 | 细分行业 | R2 大师 `master-skill` | git（必需，外部上游） | 行业 Master Skill（Phase 3 调女娲出人物 sub-skill） |
 | 长内容（书/视频/播客/课程/访谈） | R3 仓颉 `cangjie-skill` | git（必需，外部上游） | 原子能力卡 + Skill 包 |
 | 当下问题（诊断/文案/决策/协作） | R4 dbs 家族 | npx（必需，外部上游） | 报告 / 成稿 / 决策记录 |
-| 影视/短剧/漫剧制作 | R5 `video-studio` 聚合层 | 内置，7 个子技能随仓库 | 剧本 / 设定 / 分镜 / 参数 / 流程方案 |
+| 影视/短剧/漫剧制作 | R5 `video-studio` 聚合层 | 内置，9 个子技能随仓库（含导演/镜头层） | 剧本 / 设定 / 分镜 / 参数 / 流程方案 |
 | 已有产物二次打磨 | R6 `f2r-feedback-iteration` | 内置 | 迭代后的产物 + 反馈规则记录 |
 | 长期知识库（个人/领域 Wiki） | R7 `wiki-vault` | 内置 | 持续累积的 Obsidian Markdown 知识库（摘要/实体/概念/对比/综述页 + 索引/日志/热缓存） |
 | Darwin 式压测底座（可选） | `darwin-skill` | git（可选，外部上游） | 压测行为验证本体 |
@@ -170,7 +172,7 @@ cp -r skills/zyx skills/video-studio ~/.doubao/agent_mode/workspace/.user_skills
 不会。ZYX 是薄壳路由入口，只判断类型、转发委派、收口产物；方法论分别驻留在对应蒸馏器与子技能里，ZYX 不复制、不内嵌其内部文件。
 
 **Q：装好 ZYX 就能直接出蒸馏产物 / 影视脚本吗？**
-R5 影视七子技能与 R6 迭代器随仓库内置；R1–R4 上游蒸馏器（女娲 / 大师 / 仓颉 / dbs）是外部依赖，用 `bash scripts/install.sh --install-deps` 或按 `deps/manifest.json` 单独安装；可选达尔文压测底座同理。
+R5 影视九子技能（含导演/镜头层）与 R6 迭代器随仓库内置；R1–R4 上游蒸馏器（女娲 / 大师 / 仓颉 / dbs）是外部依赖，用 `bash scripts/install.sh --install-deps` 或按 `deps/manifest.json` 单独安装；可选达尔文压测底座同理。
 
 **Q：支持哪些 Agent 宿主？**
 兼容开放 Agent Skills 规范的宿主：Claude Code、Codex、OpenClaw、Cursor、Gemini CLI、OpenCode 等；探测目录见 `deps/manifest.json`，可用 `ZYX_EXTRA_SKILL_DIRS` 追加。

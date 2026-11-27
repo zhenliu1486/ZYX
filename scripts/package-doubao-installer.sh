@@ -22,7 +22,7 @@ metadata:
 
 # ZYX Installer
 
-ZYX 是 16 个技能的多技能包，根目录故意没有单个 `SKILL.md`。不要把它当作一个普通技能安装，也不要去 GitHub 搜索“zyx skill”。
+ZYX 是 18 个技能的多技能包，根目录故意没有单个 `SKILL.md`。不要把它当作一个普通技能安装，也不要去 GitHub 搜索“zyx skill”。
 
 ## 执行
 

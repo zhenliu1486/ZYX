@@ -22,7 +22,7 @@ curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh |
 curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash -s -- --no-deps
 ```
 
-> **为什么 AI 会说“没找到”**：ZYX 是 16 个技能的多技能包，根目录故意没有单个 `SKILL.md`；豆包技能安装器只认根级 `SKILL.md`，不会递归找 `skills/`。给 AI 固定 URL，不要让它自己搜 GitHub。豆包上传包与详细说明见 [INSTALL.md](INSTALL.md)。
+> **为什么 AI 会说“没找到”**：ZYX 是 18 个技能的多技能包，根目录故意没有单个 `SKILL.md`；豆包技能安装器只认根级 `SKILL.md`，不会递归找 `skills/`。给 AI 固定 URL，不要让它自己搜 GitHub。豆包上传包与详细说明见 [INSTALL.md](INSTALL.md)。
 
 ## 仓库结构
 
@@ -37,7 +37,9 @@ ZYX/
 │   │   ├── scripts/          # 路由解析、自注册、静默更新、自检、look.py、omarchy-bridge.py
 │   │   ├── shared/          # 第 3 层：共享底座（校验/质检/可信度/规范/压测）
 │   │   └── evals/           # 路由回归用例
-│   ├── video-studio/         # R5 影视/短剧/漫剧制作聚合层（内部路由子技能）
+│   ├── video-studio/         # R5 影视/短剧/漫剧制作聚合层（内部路由 9 个子技能）
+│   ├── director-camera-composition/ # R5 导演运镜/机位/构图（内置）
+│   ├── ai-camera-shots/      # R5 镜头语言/分镜/转场（内置，MIT 上游）
 │   ├── wiki-vault/           # R7 长期知识库（raw/ 只读 → wiki/ 编译）
 │   └── ashare-four-dim-decision/  # R8 投资决策总控（附 4 个四维子技能）
 ├── docs/
@@ -61,7 +63,7 @@ ZYX/
 | 细分行业 | 大师 `master-skill` | swaylq/master-skill |
 | 长内容（书/视频/播客/课程/访谈） | 仓颉 `cangjie-skill` | kangarooking/cangjie-skill |
 | 当下问题（诊断/文案/决策/协作） | dbs 家族 | dontbesilent2025/dbskill |
-| 影视/短剧/漫剧制作 | `video-studio` 聚合层 | 本仓库 `skills/video-studio` |
+| 影视/短剧/漫剧/镜头设计 | `video-studio` 聚合层（含导演/镜头层） | 本仓库 `skills/video-studio` / `director-camera-composition` / `ai-camera-shots` |
 | 已有产物二次迭代 | `f2r-feedback-iteration` | 本地打磨类子技能 |
 | 长期知识库（个人/领域 Wiki） | `wiki-vault` | 本仓库 `skills/wiki-vault` |
 | 投资 / 股票 / 波段 / 超短线 | `ashare-four-dim-decision`（+ 情绪/风口/资金/技术四子技能） | 本仓库 `skills/ashare-*` |

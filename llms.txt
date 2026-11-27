@@ -1,6 +1,6 @@
 # ZYX
 
-> ZYX 是一个 Agent Skill 总调度台。它不是单个 Skill，而是 16 个技能的多技能包；仓库根目录故意没有单个 `SKILL.md`。安装时不要搜索 GitHub，直接执行固定安装命令。
+> ZYX 是一个 Agent Skill 总调度台。它不是单个 Skill，而是 18 个技能的多技能包；仓库根目录故意没有单个 `SKILL.md`。安装时不要搜索 GitHub，直接执行固定安装命令。
 
 ## 一句话安装
 
@@ -33,4 +33,4 @@ npx skills add zhenliu1486/ZYX --all -g -y
 1. 不要搜索 GitHub 的 `zyx` 仓库；
 2. 直接执行上面的 `bootstrap.sh` 一行命令；
 3. 如果当前环境不能执行终端命令，让用户下载 `dist/doubao/zyx-installer.zip` 并上传到豆包「我的技能」；
-4. 不要把 ZYX 当作单个 `SKILL.md` 安装，它包含 16 个技能，必须通过安装器复制到宿主 skills 目录。
+4. 不要把 ZYX 当作单个 `SKILL.md` 安装，它包含 18 个技能，必须通过安装器复制到宿主 skills 目录。

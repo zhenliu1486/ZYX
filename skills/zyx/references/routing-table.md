@@ -8,7 +8,7 @@
 | **R2 大师** `master-skill` | 一个细分行业 | 「我是做跨境电商的」「帮我蒸一个 AI 基础设施大师」「让 agent 变成 X 行资深人」；原料是行业资料、岗位实践、工具栈 | 行业 Master Skill（镜片 / playbook / 表达 DNA / 质量基准 / 反模式 / 时效层），含人物 sub-skill | 粒度是细分领域，不覆盖泛行业；不做单一人物复刻 |
 | **R3 仓颉** `cangjie-skill` | 长内容 | 「拆《穷查理宝典》」「把这个 B 站视频/播客/课程/访谈做成 skill」；原料是书、长视频转写、播客文字稿、课程稿、长文 | 原子能力卡 + 编译 Skill 包（single / pack） | 不做书摘、读后感、作者角色扮演；纯观点/评论类内容不蒸馏 |
 | **R4 dbs 家族** | 当下问题 | 「我这门生意行不行」「这篇文案哪里不抓人」「帮我把这事写成决策记录」「派给员工跟进」；无新 Skill 产出诉求 | 诊断报告 / 成稿 / 决策记录 / 派单结果 | 不把当下问题沉淀成可安装 Skill；要沉淀走 R1/R2/R3 |
-| **R5 内容生产** | 影视/短剧/漫剧制作 | 「构思这个故事」「写竖屏短剧剧本」「做角色/场景设定」「设计打斗分镜」「控人物表情视频」「排从剧本到成片的流程」 | 剧本/设定/分镜/参数/流程方案 | 电商带货编导不归这里；投资决策走 R8；内部再由 video-studio 聚合层路由到对应子技能 |
+| **R5 内容生产** | 影视/短剧/漫剧制作 | 「构思这个故事」「写竖屏短剧剧本」「做角色/场景设定」「这场戏怎么拍」「设计机位/运镜/构图」「设计打斗分镜」「控人物表情视频」「排从剧本到成片的流程」 | 剧本/设定/导演机位方案/分镜/参数/流程方案 | 电商带货编导不归这里；投资决策走 R8；内部再由 video-studio 聚合层路由到对应子技能；剧本/情绪→机位方案以 director-camera-composition 为主导演层 |
 | **R6 产物迭代** | 已有产物二次打磨 | 「这份 skill/报告/文档再改改」「按我的反馈迭代这版」「这版哪里没打中、怎么改」 | 迭代后的产物 + 反馈规则记录 | 不是从零蒸馏/生产；指向 F2R 负反馈迭代，必要时联动 resonate / ai-check 打磨 |
 | **R7 知识库** `wiki-vault` | 长期知识库（个人/领域 Wiki） | 「建一个关于 X 的知识库」「把这篇/这本书加进我的 X 库」「我库里关于 X 都有什么结论」「体检一下我的库」；原料是持续要往里喂的文章/论文/转写/数据 | 持续累积的 Obsidian Markdown 知识库（摘要/实体/概念/对比/综述页 + 索引/日志/热缓存） | 只要一次性拆成 Skill 包走 R3；人物/行业深挖走 R1/R2；眼下判断走 R4；不从零生产影视内容 |
 
@@ -29,7 +29,8 @@
 - **大师 → 女娲**：R2 大师在 Phase 3 生成 top3 行业人物 sub-skill 时，委派给 R1 女娲流水线。衔接时把女娲安装目录作为 R1 路径传入，不在大师目录里复制女娲文件。
 - **仓颉 → 素材前置转写**：R3 仓颉要求先有文字稿/字幕转写。**无文字稿时先走转写链路**：平台视频/播客先用 `dbs-video-extract` 提取语音文字稿；本地音视频走本地转写；拿到文字稿后再进仓颉 RIA-TV++ 流水线。
 - **仓颉 → 达尔文**：R3 仓颉阶段 4 的压力测试兼容达尔文评测协议；压测用例口径见 `../shared/darwin/`，达尔文本体作为第 3 层底座引用，不内嵌进仓颉。
-- **内容生产 → video-studio**：R5 先到 `video-studio` 聚合入口，由其内部路由到剧本/编剧/人物/场景/动作/表情/全流程对应子技能。
+- **内容生产 → video-studio**：R5 先到 `video-studio` 聚合入口，由其内部路由到剧本/编剧/人物/场景/导演运镜/镜头语言/动作/表情/提示词/全流程对应子技能。
+- **内容生产 → 导演层与镜头层**：剧本/情绪→机位方案先走 `director-camera-composition`；标准景别/机位/焦段/运镜/转场/镜头清单走 `ai-camera-shots` 做词典与兜底；动作戏仍由 `cinematic-fight-direction` 主控；`cinematic-video-prompt` 只在需要补光照/色彩/材质词汇时可选接入。
 - **产物迭代 → F2R**：R6 已有产物二次修改迭代，指向 `f2r-feedback-iteration`（负反馈迭代：把人的判断显性化为规则、小样本迭代 + 回归测试）；需要诊断稿件共鸣断点时联动 `dbs-resonate`，需要查 AI 味/机器化表达时联动 `dbs-ai-check`。
 - **知识库 → 晋级/深挖/改版**：R7 库内沉淀出独立复用价值（过三重验证 + 具备独立复用价值）才委派 R3 打包成 Skill；人物/行业深挖交 R1/R2，wiki 只留摘要与 wikilink；页面按反馈改版联动 R6。
 - **投资决策 → 四维子技能**：R8 先进 `ashare-four-dim-decision` 总控，由其按需读取四个子技能 SKILL.md（情绪 `ashare-sentiment-cycle`、风口 `ashare-theme-wind`、资金 `ashare-capital-flow`、技术 `ashare-technical-structure`）打分后统一加权；`../../ashare-four-dim-decision/scripts/score.py` 做确定性计算，不手算。
@@ -57,7 +58,7 @@
 | R2 | `master-skill` | https://github.com/swaylq/master-skill（git，必需） |
 | R3 | `cangjie-skill` | https://github.com/kangarooking/cangjie-skill（git，必需） |
 | R4 | `dbs-*`（主目录 `dbs`） | https://github.com/dontbesilent2025/dbskill（npx，必需） |
-| R5 | `video-studio`（聚合层） | 随仓库内置；7 个子技能随仓库内置，见 video-studio/SKILL.md |
+| R5 | `video-studio`（聚合层） | 随仓库内置；9 个子技能随仓库内置，见 video-studio/SKILL.md |
 | R6 | `f2r-feedback-iteration` | 随仓库内置 |
 | R7 | `wiki-vault` | 随仓库内置 |
 | R8 | `ashare-four-dim-decision`（+4 子技能） | 随仓库内置 |

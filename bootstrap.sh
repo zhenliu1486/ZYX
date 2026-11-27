@@ -105,5 +105,5 @@ ZYX 已安装。新开一个对话，直接说：
 如果自检提示缺外部依赖，重跑：
   curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash
 
-不要只从 GitHub 搜索“zyx skill”：ZYX 是 16 个技能的多技能包，仓库根目录故意没有单个 SKILL.md。
+不要只从 GitHub 搜索“zyx skill”：ZYX 是 18 个技能的多技能包，仓库根目录故意没有单个 SKILL.md。
 MSG

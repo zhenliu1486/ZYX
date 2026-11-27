@@ -38,7 +38,7 @@ curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash 
 npx skills add zhenliu1486/ZYX --all -g -y
 ```
 
-这条只复制 16 个技能，不会安装女娲 / 大师 / 仓颉 / dbs / R8。装完用 `bootstrap.sh` 或 `bash ~/.claude/skills/zyx/scripts/doctor.sh` 补齐外部依赖。
+这条只复制 18 个技能，不会安装女娲 / 大师 / 仓颉 / dbs / R8。装完用 `bootstrap.sh` 或 `bash ~/.claude/skills/zyx/scripts/doctor.sh` 补齐外部依赖。
 
 ## 豆包工作 / 不能执行终端的 AI
 
@@ -52,7 +52,7 @@ npx skills add zhenliu1486/ZYX --all -g -y
 
 ## 为什么以前“找不到”
 
-- ZYX 是 16 个技能的多技能仓库，根目录没有 `SKILL.md`；
+- ZYX 是 18 个技能的多技能仓库，根目录没有 `SKILL.md`；
 - 旧 README 只写了 `bash scripts/install.sh`，前提是已经 clone；
 - 豆包技能安装器只认根级 `SKILL.md` 的单个技能包，不会递归找 `skills/`；
 - GitHub 搜索 “zyx” 会撞上大量同名项目，仓库没有安装入口关键词。

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "zyx_version": "1.6.1",
+  "zyx_version": "1.8.0",
   "description": "ZYX 路由调度台的依赖声明清单。doctor / updater / install 脚本统一从本文件读取，不在脚本里硬编码依赖清单。",
   "host_dirs": [
     "$HOME/.claude/skills",
@@ -68,7 +68,7 @@
       "parent": null,
       "url": null,
       "install": "随 ZYX 仓库内置，安装器自动复制",
-      "notes": "R5 聚合入口，内部路由到下列子技能。"
+      "notes": "R5 聚合入口，内部路由到 9 个内置子技能 + 1 个可选外部词汇包。"
     },
     {
       "id": "R5-script",
@@ -113,6 +113,28 @@
       "url": null,
       "install": "随 ZYX 仓库内置，安装器自动复制",
       "notes": "背景/环境/分镜场景图/时间天气氛围场景。"
+    },
+    {
+      "id": "R5-shots",
+      "route": "镜头语言/分镜/转场",
+      "dir": "ai-camera-shots",
+      "source": "bundled",
+      "required": false,
+      "parent": "video-studio",
+      "url": "https://github.com/joost/ai-camera-shots",
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "MIT 上游，commit 326478f；五决策/34 镜/运镜/转场/9:16/镜头清单；内置以开箱可用，UPSTREAM.md 记录同步方式。"
+    },
+    {
+      "id": "R5-director",
+      "route": "导演运镜/机位/构图",
+      "dir": "director-camera-composition",
+      "source": "bundled",
+      "required": false,
+      "parent": "video-studio",
+      "url": null,
+      "install": "随 ZYX 仓库内置，安装器自动复制",
+      "notes": "中文导演层：12 情绪×六维处方、8 beat 配镜、正反打/180°/竖屏 9:16/分镜表/提示词四查；框架重组自 joost/ai-camera-shots 与 Rylaispirit/cinematic-video-prompt-skill（MIT）。"
     },
     {
       "id": "R5-fight",

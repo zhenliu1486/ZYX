@@ -2,6 +2,19 @@
 
 本文件记录 zyx 总调度台的版本变更。版本号遵循 SemVer（MAJOR.MINOR.PATCH）。
 
+## 1.8.0 — 2026-11-27
+
+### 新增 · R5 导演层与镜头层
+- 新增 `director-camera-composition`：中文“剧本/情绪 → 机位方案”导演层。含 12 种情绪 × 六维处方、8 种 beat × 镜头配比、情绪转换三种走法、正反打/180°/30°、竖屏 9:16、分镜表六行格式、提示词四查与重写。
+- 内置 `ai-camera-shots`：MIT 镜头语法层，提供五决策、34 种镜头、运镜、转场、镜头清单与 9:16 构图；作为导演层的词典与兜底。
+- `video-studio` 升级为 9 个内置子技能 + 1 个可选外部词汇包；新增“导演判断 → 镜头语法 → 词汇增强”的三步链路，动作戏仍由 `cinematic-fight-direction` 主控。
+- `deps/manifest.json` 新增 `R5-shots`、`R5-director`；`zyx_version` 升至 1.8.0。
+- 安装器与豆包上传包随仓库更新，内置技能数从 16 变为 18。
+
+### 边界
+- 导演层只做镜头层方案，不做灯光/调色系统、剪辑节奏与声音、具体影片判读。
+- 保留 `ai-camera-shots` 与两位 MIT 上游的 `LICENSE` / `UPSTREAM.md`；不把上游 references 复制进 `video-studio`。
+
 ## 1.6.1 — 2026-11-27
 
 ### 修复 · FC-001 汇洲智能案例暴露的三类偏差
