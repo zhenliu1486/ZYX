@@ -139,7 +139,7 @@ echo
 # 2. 可选：安装外部 git / npx 依赖
 if [ "$INSTALL_DEPS" -eq 1 ]; then
   echo "## 安装外部依赖"
-  while IFS=$'\t' read -r id dir source required parent url install notes; do
+  while IFS=$'\x1f' read -r id dir source required parent url install notes; do
     [ -z "$dir" ] && continue
     if [ "$source" = "git" ]; then
       if [ -d "$TARGET_DIR/$dir" ]; then

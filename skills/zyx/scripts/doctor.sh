@@ -49,7 +49,7 @@ echo
 
 echo "## 2. 依赖安装状态（清单: deps/manifest.json）"
 # 读取清单行：id|dir|source|required|parent|url|install|notes
-while IFS=$'\t' read -r id dir source required parent url install notes; do
+while IFS=$'\x1f' read -r id dir source required parent url install notes; do
   [ -z "$dir" ] && continue
   p="$(find_local "$dir" || true)"
   if [ -n "$p" ]; then
@@ -68,7 +68,7 @@ echo
 
 echo "## 3. 文件完整性（自身 + 已安装的内置技能）"
 INTEGRITY_TARGETS=("$ZYX_DIR")
-while IFS=$'\t' read -r id dir source required parent url install notes; do
+while IFS=$'\x1f' read -r id dir source required parent url install notes; do
   [ -z "$dir" ] && continue
   [ "$source" != "bundled" ] && continue
   p="$(find_local "$dir" || true)"
@@ -79,7 +79,7 @@ echo
 
 if [ "$ONLINE" -eq 1 ]; then
   echo "## 4. 上游网络可达性"
-  while IFS=$'\t' read -r id dir source required parent url install notes; do
+  while IFS=$'\x1f' read -r id dir source required parent url install notes; do
     [ -z "$url" ] && continue
     if curl -fsSI --max-time 8 "$url" >/dev/null 2>&1; then
       echo "  ✅ [$id] $url 可达"

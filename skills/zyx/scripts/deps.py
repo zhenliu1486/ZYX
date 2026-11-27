@@ -3,7 +3,7 @@
 
 子命令：
   host-dirs                打印展开后的宿主 skills 目录（每行一个，$HOME 已展开）
-  deps                     打印依赖行：id\tdir\tsource\trequired\tparent\turl\tinstall\tnotes
+  deps                     打印依赖行：id\x1fdir\x1fsource\x1frequired\x1fparent\x1furl\x1finstall\x1fnotes
   git-repos                仅打印 source=git 的依赖：id\tdir\turl
   get-dir <dir> <field>    按目录名取字段（url/install/source/required/parent/notes）
 
@@ -64,7 +64,7 @@ def main() -> int:
             dep.get("install") or "",
             dep.get("notes") or "",
         ]
-        print("\t".join(row))
+        print("\x1f".join(row))
     return 0
 
 
