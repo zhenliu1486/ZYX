@@ -19,7 +19,7 @@ curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh |
 1. 把 ZYX 克隆到 `~/.zyx/src`；
 2. 调仓库自带的 `scripts/install.sh --install-deps`；
 3. 把 `zyx`、`video-studio`、R5 子技能、R6、R7 等内置技能复制到本机已存在的 Agent 宿主目录；
-4. 安装女娲 / 大师 / 仓颉 / dbs / R8 等外部依赖；
+4. 安装女娲 / 大师 / 仓颉 / dbs / 达尔文 等外部依赖；
 5. 跑 `doctor.sh` 自检。
 
 装完新开一个对话，直接说：
@@ -38,7 +38,7 @@ curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash 
 npx skills add zhenliu1486/ZYX --all -g -y
 ```
 
-这条只复制 18 个技能，不会安装女娲 / 大师 / 仓颉 / dbs / R8。装完用 `bootstrap.sh` 或 `bash ~/.claude/skills/zyx/scripts/doctor.sh` 补齐外部依赖。
+这条只复制 18 个技能，不会安装女娲 / 大师 / 仓颉 / dbs / 达尔文。装完用 `bootstrap.sh` 或 `bash ~/.claude/skills/zyx/scripts/doctor.sh` 补齐外部依赖。
 
 ## 豆包工作 / 不能执行终端的 AI
 

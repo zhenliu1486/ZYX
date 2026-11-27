@@ -8,7 +8,7 @@
 #
 # 参数：
 #   --dir <dir>       指定宿主 skills 目录（不传则自动探测）
-#   --no-deps         只装随仓库内置技能，不装女娲/大师/仓颉/dbs/R8 等外部依赖
+#   --no-deps         只装随仓库内置技能，不装女娲/大师/仓颉/dbs/达尔文 等外部依赖
 #   --ref <ref>       分支或 tag，默认 main
 #   --repo <owner/repo> GitHub 仓库，默认 zhenliu1486/ZYX
 #   --src <dir>       源码缓存目录，默认 ~/.zyx/src
