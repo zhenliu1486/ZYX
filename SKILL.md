@@ -6,7 +6,7 @@ metadata:
   author: "ZYX"
   version: "1.9.0"
   repository: "https://github.com/zhenliu1486/ZYX"
-  install_command: "curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash"
+  install_command: "curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh | bash"
 allowed-tools: Bash, Read, WebFetch
 ---
 
@@ -57,7 +57,7 @@ bash "$HOME/.zyx/src/bootstrap.sh" --no-deps
 
 - 有终端：复制这一行执行：
   ```bash
-  curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh | bash
   ```
 - 豆包工作 / 不能执行终端的桌面端：先下载 `zyx-installer.zip`，在「技能 · 连接器 · 伙伴 → 我的技能 → 上传技能」上传，再对新对话说「帮我安装 zyx」。
 - 只能浏览网页的 Agent：把 `INSTALL.md` 和 `llms.txt` 的内容读完，按里面的命令交给用户执行；不要编造一个“已经装好”的结果。

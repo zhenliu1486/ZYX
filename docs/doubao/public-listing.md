@@ -7,7 +7,7 @@
 - 技能名称：`zyx-installer`
 - 展示名称建议：`ZYX 调度台安装器`
 - 版本：`1.9.0`
-- 图标：`docs/doubao/zyx-icon.png`（512×512 PNG，18 KB）
+- 图标：`docs/doubao/zyx-icon.png`（512×512 PNG，42 KB）
 - 分类建议：办公效率 / 内容创作 / 开发者工具
 - 简介：一句话安装 ZYX 多技能包（19 个技能），覆盖人物/行业/长内容蒸馏、影视短剧制作、产物迭代、长期知识库、A 股四维投资决策与 Pinky 手机操作。
 - 仓库：<https://github.com/zhenliu1486/ZYX>
@@ -49,7 +49,7 @@ bash scripts/package-doubao-public.sh
 
 - 干净环境（无 `~/.zyx`、无旧 ZYX）执行：
   ```bash
-  curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh | bash
   ```
 - 预期：19 个技能落盘；`doctor.sh` 输出“基本就绪 / 全部就绪”；缺失项有明确补装命令。
 - 记录：系统、Shell、git/python 版本、安装耗时、doctor 原文。

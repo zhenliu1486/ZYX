@@ -7,20 +7,34 @@
 把下面整行复制给任何能执行终端的 AI，或直接贴进终端：
 
 ```bash
-curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh | bash
 ```
 
-GitHub 备用地址：
+GitHub 备用地址（同一文件，raw 域名不可用时用）：
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh | bash
 ```
 
+国内镜像（固定 v1.9.0，**不要用 jsDelivr 的 `@main`，它会缓存旧版**）：
+
+```bash
+curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@v1.9.0/bootstrap.sh | bash
+```
+
 只装技能本体、不装外部依赖：
 
 ```bash
-curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash -s -- --no-deps
+curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh | bash -s -- --no-deps
 ```
+
+给能读网页 / 能执行终端的 AI，最稳的一句是带固定入口，而不是只报名字：
+
+```text
+读取 https://raw.githubusercontent.com/zhenliu1486/ZYX/main/SKILL.md ，按里面的步骤把 ZYX 装到本地。
+```
+
+这个 `SKILL.md` 是 `zyx-installer`，它会取仓库并运行 `bootstrap.sh`；它不会把 19 个技能压成一个。
 
 > **根目录现在有一个 `SKILL.md`，但它只是安装器**：`name: zyx-installer`。它让只认根级 `SKILL.md` 的宿主/豆包上传器能找到入口，然后取仓库并运行 `bootstrap.sh`；它不会把 ZYX 变成单个技能。ZYX 仍是 19 个技能的多技能包，安装器会复制整个 `skills/` 树。豆包上传包与公开上架说明见 [INSTALL.md](INSTALL.md)。
 
@@ -101,14 +115,14 @@ cp -r skills/video-studio ~/.claude/skills/video-studio
 **路径 1 · 有终端（真正一句话）**
 
 ```bash
-curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh | bash
 ```
 
 装完 ZYX 会落到本地 skills 目录；豆包桌面端会自动读取本地技能（云电脑与本地电脑的技能列表不共用，云电脑要再装一次）。
 
 **路径 2 · 豆包「上传技能」（一次上传，之后一句话）**
 
-1. 下载 `ZYX-豆包安装器-v1.9.0.zip`（Release asset 或 `dist/doubao/zyx-installer.zip`）。
+1. 下载 Release 的 `zyx-installer.zip`（可另存为 `ZYX-豆包安装器-v1.9.0.zip`；仓库内为 `dist/doubao/zyx-installer.zip`）。
 2. 豆包 PC →「技能 · 连接器 · 伙伴」→「我的技能」→「上传技能」→ 拖入 zip。
 3. 新开对话说「帮我安装 zyx」；安装器会运行 `bootstrap.sh`，装完 19 个技能。
 

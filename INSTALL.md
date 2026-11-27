@@ -5,7 +5,7 @@ ZYX 是 **19 个技能的多技能包**，不是单个 `SKILL.md`。仓库根目
 ## 一句话安装（推荐，完整安装）
 
 ```bash
-curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh | bash
 ```
 
 GitHub 原始地址备用：
@@ -29,8 +29,16 @@ curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh |
 ## 只装技能本体（已有外部依赖时）
 
 ```bash
-curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash -s -- --no-deps
+curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh | bash -s -- --no-deps
 ```
+
+给能读网页 / 能执行终端的 AI，带固定入口更稳：
+
+```text
+读取 https://raw.githubusercontent.com/zhenliu1486/ZYX/main/SKILL.md ，按里面的步骤把 ZYX 装到本地。
+```
+
+根级 `SKILL.md` 是 `zyx-installer`，它会取仓库并运行 `bootstrap.sh`。
 
 ## 已经 clone 了仓库
 
@@ -56,7 +64,7 @@ npx skills add zhenliu1486/ZYX -g -y
 
 豆包「我的技能」只接受带根级 `SKILL.md` 的单个技能包，不会自动发现 GitHub 仓库里的 `skills/zyx/SKILL.md`。所以：
 
-1. 下载 `ZYX-豆包安装器-v1.9.0.zip`（Release asset，或仓库 `dist/doubao/zyx-installer.zip`）；
+1. 下载 Release 的 `zyx-installer.zip`（可另存为 `ZYX-豆包安装器-v1.9.0.zip`；仓库内为 `dist/doubao/zyx-installer.zip`）；
 2. 豆包 PC →「技能 · 连接器 · 伙伴」→「我的技能」→「上传技能」→ 拖入 zip；
 3. 新开对话，说「帮我安装 zyx」。
 

@@ -7,7 +7,7 @@ metadata:
   version: "1.9.0"
   repository: "https://github.com/zhenliu1486/ZYX"
   icon: "icon.png"
-  install_command: "curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash"
+  install_command: "curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh | bash"
 allowed-tools: Bash, Read, WebFetch
 ---
 

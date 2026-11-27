@@ -2,7 +2,7 @@
 # ZYX 一行安装器：把 ZYX 多技能包装到本机，并跑 doctor 自检。
 #
 # 用法：
-#   curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh | bash
 #   curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh | bash
 #   bash bootstrap.sh --dir ~/.claude/skills --no-deps
 #
@@ -106,7 +106,7 @@ ZYX 已安装（19 个技能：18 个内置 + R0 Pinky 手机操作）。新开�
 R0 手机操作还需要另装 Pinky 桌面端、连接手机并接入 MCP；步骤见安装目录下的 pinky/SETUP.md。
 
 如果自检提示缺外部依赖，重跑：
-  curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh | bash
 
 不要只从 GitHub 搜索“zyx skill”：ZYX 是多技能包，根目录 SKILL.md 只是 zyx-installer 安装入口。
 MSG
