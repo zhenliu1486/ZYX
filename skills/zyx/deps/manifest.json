@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "zyx_version": "1.8.0",
+  "zyx_version": "1.9.0",
   "description": "ZYX 路由调度台的依赖声明清单。doctor / updater / install 脚本统一从本文件读取，不在脚本里硬编码依赖清单。",
   "host_dirs": [
     "$HOME/.claude/skills",
@@ -15,6 +15,17 @@
     "$HOME/.hermes/skills"
   ],
   "dependencies": [
+    {
+      "id": "R0",
+      "route": "手机操作（Pinky，可选工具层）",
+      "dir": "pinky",
+      "source": "bundled",
+      "required": false,
+      "parent": null,
+      "url": "https://github.com/DIYgod/pinky",
+      "install": "随 ZYX 仓库内置；实际使用还需安装 Pinky 桌面端、连接手机，并在宿主接入 pinky MCP。步骤见 skills/pinky/SETUP.md",
+      "notes": "Apache-2.0，上游 commit 6933257；ZYX 只路由，不替代 Pinky 的手机授权与人工审批。"
+    },
     {
       "id": "R1",
       "route": "人（思维方式 / 名人 OS）",

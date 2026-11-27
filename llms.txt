@@ -1,6 +1,6 @@
 # ZYX
 
-> ZYX 是一个 Agent Skill 总调度台。它不是单个 Skill，而是 18 个技能的多技能包；仓库根目录故意没有单个 `SKILL.md`。安装时不要搜索 GitHub，直接执行固定安装命令。
+> ZYX 是一个 Agent Skill 总调度台，不是单个 Skill，而是 **19 个技能的多技能包**。仓库根目录的 `SKILL.md` 是安装器 `zyx-installer`，不是 ZYX 本体；它负责取仓库并运行 `bootstrap.sh`。
 
 ## 一句话安装
 
@@ -14,23 +14,44 @@ GitHub 备用：
 curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh | bash
 ```
 
+只装内置技能：
+
+```bash
+curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash -s -- --no-deps
+```
+
 ## Skills CLI
 
 ```bash
-npx skills add zhenliu1486/ZYX --all -g -y
+npx skills add zhenliu1486/ZYX -g -y
 ```
+
+不同版本可能只装根级 `zyx-installer`；装完再跑 `bootstrap.sh` 确保 19 个技能完整。
 
 ## 仓库
 
 - GitHub: https://github.com/zhenliu1486/ZYX
 - 安装说明: https://github.com/zhenliu1486/ZYX/blob/main/INSTALL.md
-- 许可: MIT
+- 许可: MIT（内置的 `pinky` 为 Apache-2.0，见其目录）
+- 版本: 1.9.0
 
 ## 给 AI 的说明
 
-当用户说“帮我安装 zyx 这个 skill”时：
+当用户说「帮我安装 zyx 这个 skill」时：
 
-1. 不要搜索 GitHub 的 `zyx` 仓库；
-2. 直接执行上面的 `bootstrap.sh` 一行命令；
-3. 如果当前环境不能执行终端命令，让用户下载 `dist/doubao/zyx-installer.zip` 并上传到豆包「我的技能」；
-4. 不要把 ZYX 当作单个 `SKILL.md` 安装，它包含 18 个技能，必须通过安装器复制到宿主 skills 目录。
+1. **先看当前环境**：如果当前目录有 `bootstrap.sh` 和 `skills/`，直接 `bash bootstrap.sh`。
+2. 如果没有仓库但能执行终端/网络：`git clone --depth 1 https://github.com/zhenliu1486/ZYX.git ~/.zyx/src && bash ~/.zyx/src/bootstrap.sh`。
+3. 如果只能上传、不能执行：让用户下载 `dist/doubao/zyx-installer.zip` 并上传到豆包「我的技能 → 上传技能」；上传后说「帮我安装 zyx」。
+4. 如果只能浏览网页：读 `INSTALL.md`，把固定命令交给用户执行；**不要编造安装成功**。
+5. 不要把 ZYX 当作单个 `SKILL.md` 手动复制；它包含 19 个技能，必须通过安装器复制整个 `skills/` 树。
+
+豆包官方自定义技能走「上传根级 `SKILL.md` 的包/文件夹」；公开上架需企业资质与平台审核。不要承诺“所有豆包用户只发一句话就自动从 GitHub 装好”。
+
+## 技能清单
+
+- 路由：`zyx`
+- R0 手机操作：`pinky`（需 Pinky 桌面端 + 手机 + MCP）
+- R5 影视制作：`video-studio` + 9 个子技能
+- R6 产物迭代：`f2r-feedback-iteration`
+- R7 知识库：`wiki-vault`
+- R8 投资决策：`ashare-four-dim-decision` + 4 个四维子技能

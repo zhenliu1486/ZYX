@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""route-selftest.py — 验证 route.sh 的八类路由映射与路径解析。
+"""route-selftest.py — 验证 route.sh 的九类路由映射与路径解析。
 
 用临时目录伪造每个蒸馏器的 SKILL.md，通过环境变量覆盖路径，逐条断言：
 - 返回码为 0；
@@ -16,6 +16,7 @@ HERE = Path(__file__).resolve().parent
 ROUTE = HERE / "route.sh"
 
 CASES = [
+    ("phone", "pinky", "PINKY_SKILL_DIR"),
     ("person", "nuwa-skill", "NUWA_SKILL_DIR"),
     ("industry", "master-skill", "MASTER_SKILL_DIR"),
     ("content", "cangjie-skill", "CANGJIE_SKILL_DIR"),

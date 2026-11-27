@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # route.sh — 打印路由决策与被调 Skill 路径（zyx 第 1 层薄壳辅助脚本）
-# 用法: route.sh <原料类型: person|industry|content|problem|production|iterate|wiki|invest>
+# 用法: route.sh <原料类型: person|industry|content|problem|production|iterate|wiki|invest|phone>
 # 仅做路径解析与提示，不执行蒸馏、不修改任何文件。
 
 set -euo pipefail
@@ -22,6 +22,12 @@ resolve() { # $1=目录名  $2=环境变量名
 }
 
 case "$TARGET" in
+  phone)
+    echo "路由 → R0 手机操作 pinky（工具层；需要 Pinky App + 手机 + MCP）"
+    p="$(resolve pinky PINKY_SKILL_DIR)" || { echo "未检测到 pinky 技能，请重装 ZYX 或从 https://github.com/DIYgod/pinky 安装" >&2; exit 2; }
+    echo "$p"
+    echo "前提：Pinky 桌面端已安装、手机已连接、宿主已接入 pinky MCP；步骤见 $p/SETUP.md"
+    ;;
   person)
     echo "路由 → R1 女娲 nuwa-skill（蒸馏一个人的思维方式）"
     p="$(resolve nuwa-skill NUWA_SKILL_DIR)" || { echo "未检测到 nuwa-skill，请先安装：https://github.com/alchaincyf/nuwa-skill" >&2; exit 2; }
@@ -67,7 +73,7 @@ case "$TARGET" in
     echo "$p"
     ;;
   *)
-    echo "用法: route.sh <person|industry|content|problem|production|iterate|wiki|invest>"
+    echo "用法: route.sh <person|industry|content|problem|production|iterate|wiki|invest|phone>"
     echo "  person     人     → 女娲"
     echo "  industry   行业   → 大师"
     echo "  content    长内容 → 仓颉"
@@ -75,7 +81,8 @@ case "$TARGET" in
     echo "  production 内容生产 → video-studio"
     echo "  iterate    产物迭代 → f2r"
     echo "  wiki       长期知识库 → wiki-vault"
-  echo "  invest     投资决策（股票/波段/超短线）→ ashare-four-dim-decision"
+    echo "  invest     投资决策（股票/波段/超短线）→ ashare-four-dim-decision"
+    echo "  phone      手机操作（可选）→ pinky（需另装 Pinky App/MCP）"
     exit 1
     ;;
 esac

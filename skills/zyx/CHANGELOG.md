@@ -2,6 +2,23 @@
 
 本文件记录 zyx 总调度台的版本变更。版本号遵循 SemVer（MAJOR.MINOR.PATCH）。
 
+## 1.9.0 — 2026-11-27
+
+### 新增 · R0 手机操作（Pinky）
+- 内置 `pinky`：上游 `DIYgod/pinky` 的 Agent Skill（Apache-2.0，commit `6933257`，版本 `2026.1127.5`），通过 `phone_*` MCP 工具操作真实 iPhone/Android。
+- 新增 R0 工具层路由：`route.sh phone` 转发到 `pinky`；`zyx/SKILL.md`、`routing-table.md`、`deps/manifest.json` 同步。
+- `skills/pinky/SETUP.md` 写明 Pinky 桌面端安装、手机连接、`pinkyctl mcp`/HTTP MCP 配置，以及豆包云电脑无法直连本机 Pinky 的边界。
+- 明确 R0 不是内容生产路由；没有 MCP 工具时只输出安装指引，不假装已操控手机。
+
+### 新增 · 根级安装入口
+- 仓库根目录新增 `SKILL.md`（`zyx-installer`），让只认根级 `SKILL.md` 的宿主/豆包上传器能找到安装入口；它只负责取仓库并运行 `bootstrap.sh`，不冒充 ZYX 本体。
+- `bootstrap.sh` 的完成提示与 `README`、`INSTALL.md`、`llms.txt` 同步为“19 个技能 + 根级安装器”。
+- 豆包上传包与公开上架包都由根级 `SKILL.md` 驱动；公开上架仍需企业资质与平台审核。
+
+### 边界
+- Pinky 仍是 pre-alpha；ZYX 只做路由，不替代 Pinky App 的手机授权、人工审批和安全规则。
+- 手机操作需要宿主能启动 `pinkyctl mcp` 或访问本机 HTTP MCP；豆包云电脑默认不在同一台机器。
+
 ## 1.8.0 — 2026-11-27
 
 ### 新增 · R5 导演层与镜头层

@@ -1,11 +1,11 @@
 ---
 name: zyx
-description: zyx 总调度台（薄壳路由入口）。当用户要把人、行业、长内容（书/长视频/播客/课程/访谈）蒸馏成 Skill，处理当下商业/文案/决策问题，做影视/短剧/漫剧内容生产，对已有产物二次迭代，或维护一个长期累积的个人/领域知识库时使用。只判断原料属于哪一类并转发给对应蒸馏器/聚合层，不自行产出方法论；产物按生成它的 Skill 名分目录落盘后统一回传。生产类触发词：zyx、调度、路由、造 skill、蒸馏、拆书、做个 X 的 master、我是 X 行业、诊断我的生意、这篇文案行不行、写短剧剧本、出分镜、这场戏怎么拍、设计机位/运镜/构图、改这版产物、建个知识库、把这篇加进我的库、我库里关于 X、体检我的库、把库带到别的 agent、看这版 PPT 或封面。投资类触发词：投资建议、股票、买哪只、几点买、什么时候买、什么时候卖、仓位怎么分、做波段、超短线、打板、复盘、暗盘资金、止损、该不该割、四维决策。
+description: zyx 总调度台（薄壳路由入口）。当用户要把人、行业、长内容（书/长视频/播客/课程/访谈）蒸馏成 Skill，处理当下商业/文案/决策问题，做影视/短剧/漫剧内容生产，对已有产物二次迭代，或维护一个长期累积的个人/领域知识库时使用。只判断原料属于哪一类并转发给对应蒸馏器/聚合层，不自行产出方法论；产物按生成它的 Skill 名分目录落盘后统一回传。生产类触发词：zyx、调度、路由、造 skill、蒸馏、拆书、做个 X 的 master、我是 X 行业、诊断我的生意、这篇文案行不行、写短剧剧本、出分镜、这场戏怎么拍、设计机位/运镜/构图、改这版产物、建个知识库、把这篇加进我的库、我库里关于 X、体检我的库、把库带到别的 agent、看这版 PPT 或封面。投资类触发词：投资建议、股票、买哪只、几点买、什么时候买、什么时候卖、仓位怎么分、做波段、超短线、打板、复盘、暗盘资金、止损、该不该割、四维决策。手机类触发词：操作手机、用手机点外卖、发微信、刷 App、手机自动化、真机操作。
 license: MIT
-compatibility: 兼容 Claude Code / Codex / OpenClaw / Hermes / Kiro / Cline 等 Agent Skills 标准宿主；引用外部蒸馏器路径，需与它们同机安装。
+compatibility: 兼容 Claude Code / Codex / OpenClaw / Hermes / Kiro / Cline 等 Agent Skills 标准宿主；引用外部蒸馏器路径，需与它们同机安装；R0 手机操作另需 Pinky 桌面端与 MCP。
 metadata:
   author: "ZYX"
-  version: "1.8.0"
+  version: "1.9.0"
   layer: "1-router"
   schema: "agentskills.io"
 allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
@@ -21,7 +21,7 @@ allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
 zyx/                                  # 第 1 层：入口路由（本目录，薄壳）
 ├── SKILL.md                          #   判断原料类型 → 转发 → 收口产物
 ├── references/
-│   ├── routing-table.md               #   八类原料的判定信号与分流规则
+│   ├── routing-table.md               #   八类原料 + R0 手机工具层的判定信号与分流规则
 │   └── artifact-layout.md            #   产物目录命名与回传规范（与 shared/artifacts 对齐）
 ├── deps/
 │   └── manifest.json                 #   依赖声明清单（来源/安装命令/必需可选/子技能归属），doctor/updater/install 共用
@@ -51,6 +51,7 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 
 | 编号 | 蒸馏器 | 上游仓库 | 角色 |
 |---|---|---|---|
+| R0 | `pinky` | DIYgod/pinky（随仓库内置） | **手机操作（可选工具层）**：通过 Pinky 的 `phone_*` MCP 工具操作真实 iPhone/Android；需另装 Pinky 桌面端、连接手机并在宿主接入 MCP。ZYX 只路由，不替代人工审批。 |
 | R1 | 女娲 `nuwa-skill` | alchaincyf/nuwa-skill | 蒸馏**一个人**的思维方式 / 名人 OS |
 | R2 | 大师 `master-skill` | swaylq/master-skill | 蒸馏**一个细分行业**的 Master OS（Phase 3 内部调女娲出人物 sub-skill） |
 | R3 | 仓颉 `cangjie-skill` | kangarooking/cangjie-skill | 蒸馏**长内容**（书/长视频/播客/课程/访谈）的方法论为 Skill 包 |
@@ -72,13 +73,14 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 - 注册动作只写本机调度配置，不访问远端、不推送内容；调度器不可用时不中断主流程，只记录降级提示。
 
 ### Step 1 · 读取原料，判定类型
-先读用户原话、附件和对话已有事实，不要求用户重复背景。按 `references/routing-table.md` 的判定信号，把原料归入八类之一（R1 人 / R2 行业 / R3 长内容 / R4 当下问题 / R5 内容生产 / R6 产物迭代 / R7 长期知识库 / R8 投资决策）；信号冲突或模糊时，**一次问清**属于哪类，不要猜着分流。
+先读用户原话、附件和对话已有事实，不要求用户重复背景。按 `references/routing-table.md` 的判定信号，把原料归入八类之一（R1 人 / R2 行业 / R3 长内容 / R4 当下问题 / R5 内容生产 / R6 产物迭代 / R7 长期知识库 / R8 投资决策）；如果用户要操作真实手机（点外卖、发微信、刷 App、手机自动化），走 R0 `pinky` 工具层，不混入八类原料；信号冲突或模糊时，**一次问清**属于哪类，不要猜着分流。
 
 ### Step 2 · 解析目标蒸馏器的绝对路径
 按 `references/routing-table.md` 末尾的「路径解析」找到对应蒸馏器在本机的安装目录。路径解析顺序：环境变量覆盖 → 本机各宿主 skill 目录探测 → 报错并提示安装。**禁止把蒸馏器方法论复制进 zyx 目录**，zyx 只引用路径。
 
 ### Step 3 · 转发并委派
 把任务连同原料、约束、产物目录位置交给对应蒸馏器执行：
+- **R0 手机操作**：用户要操作真实手机时，转发 `pinky`；先确认 Pinky 桌面端已安装、手机已连接、宿主已接入 `pinky` MCP。只读任务用 `read_only`，付款/下单/发送/删除等由手机端人工批准；Agent 不能代批，也不能绕过。Pinky 不在当前机器或 MCP 不可达时，明确说明“技能已装但工具未接通”，不要假装已经操控手机。
 - **R1 女娲**：明确人名 → 直接蒸馏；只有模糊困惑 → 先走女娲的诊断推荐再蒸馏。
 - **R2 大师**：输入细分行业；其 Phase 3 调女娲生成 top3 人物 sub-skill 时，按女娲路径衔接（见 `references/routing-table.md` 衔接段）。
 - **R3 仓颉**：长内容需先有文字稿/字幕转写；**无文字稿时先走 `dbs-video-extract` 或本地转写**，拿到文字稿后再进 RIA-TV++ 流水线，压测兼容达尔文（见 `shared/darwin/`）。
@@ -108,11 +110,12 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 - 不做无确认的远端动作（建仓、push、tag、Release 单独授权，见 `references/routing-table.md` 发布段）。
 - 不把书摘、读后感、作者人设扮演交给仓颉（那是女娲的活）；路由表已写明边界。
 - 知识库层不写 HTML、不装 Obsidian 插件、不改用户既有 Obsidian 库结构；同步接口仅预留。
-- 本机环境/桌面（Omarchy/Hyprland）操作不属于 R1–R8 任一类：只做只读握手，执行交给 Omarchy 自己的 skill，不新增 R9。
+- 本机环境/桌面（Omarchy/Hyprland）操作不属于 R1–R8 任一类：只做只读握手，执行交给 Omarchy 自己的 skill，不新增额外生产路由。
+- 手机操作是 R0 工具层，不是新的内容生产路由；没有 Pinky App/MCP 时只输出安装指引，不输出“已操控”的假结果。
 
-## 4. 与 Omarchy 的握手（可选，不改 R1–R8 路由）
+## 4. 与 Omarchy 的握手（可选，不改 R1–R8 生产路由）
 
-如果本机是 Omarchy（DHH 的 agentic Linux 发行版），ZYX 不新增 R9 路由，只做三件事：
+如果本机是 Omarchy（DHH 的 agentic Linux 发行版），ZYX 不新增额外生产路由，只做三件事：
 
 - `omarchy-bridge.py status`：只读报告 Omarchy 版本、主题、默认 agent、共享 skills 目录，以及 ZYX/R7/context 卡是否就位。
 - Context Card：把 R7 活动库投影成 `zyx-context` 技能卡，装进 `~/.agents/skills` 与已存在的宿主 skills 目录；换库自动刷新。

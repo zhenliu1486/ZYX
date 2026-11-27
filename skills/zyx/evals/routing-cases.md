@@ -8,6 +8,7 @@
 
 | # | 类型 | 用户原话（示例） | 预期路由 | 预期子技能 / 衔接 | 防误判 |
 |---|---|---|---|---|---|
+| E0 | 手机操作（R0） | 「用手机帮我把上周那家外卖再点一份，最后付款前停一下。」 | R0 `pinky` | `phone_connect`（带 task/read_only 或 apps 范围）→ 操作为主；付款前由手机端人工批准；结束 `phone_release` | 不按 R5 内容生产处理；没有 Pinky MCP 时只给安装指引，不假装已操控 |
 | E1 | 人（R1） | 「帮我把查理·芒格的思维方式蒸馏成一个可复用的人物视角 Skill，以后遇到决策先按他的视角想一遍。」 | R1 女娲 nuwa-skill | 人物视角 Skill；增量先验 + 三重验证 | 不按行业打法走 R2；不按拆书走 R3 |
 | E2 | 行业（R2） | 「我想做跨境电商这行，帮我把这行的大佬打法、工具地图、工作流和信息源整理成一个行业 Master Skill。」 | R2 大师 master-skill | Phase3 生成 top3 人物 sub-skill 时委派 R1 女娲 | 不按单个人物走 R1；不按当下问题走 R4 |
 | E3 | 长内容（R3） | 「这是《穷查理宝典》的摘录，帮我提炼成可复用的方法包，压测通过后入库。」 | R3 仓颉 cangjie-skill | 无文字稿时先走 dbs-video-extract / 本地转写；阶段4 兼容达尔文压测 | 不按人物视角走 R1；不按当下生意诊断走 R4 |
@@ -38,7 +39,7 @@
 
 | E19 | 视觉产物验收（Look Gate） | 「这版 PPT/封面/分镜直接发我。」 | 交付前先 `look.py` 渲染，agent 亲自 Read `look.png`，修溢出/对比度/层级/手机可读性/缺字；未看不得宣称已验证 | 不把源文件当“已验收”；不做纯文本 QA 代替视觉验收 |
 | E20 | 跨宿主 Context 卡（R7） | 「换到另一个 agent，它怎么知道我的库？」 | `wiki.py context --install` 生成 `zyx-context` 卡，装到 `~/.agents/skills` 与已存在宿主；`use` 换库自动刷新；只覆盖 managed 卡 | 不覆盖用户同名技能；不把整库内容塞进技能卡；不改 `~/.agents/AGENTS.md` |
-| E21 | Omarchy 握手（环境层） | 「帮我把 Omarchy 桌面调一下。」 | 握手后交给 Omarchy 的 `omarchy` skill；ZYX 只报版本/主题/默认 agent 与安装状态 | 不新增 R8 路由；不改 `/usr/share/omarchy`；不复制 Omarchy 技能 |
+| E21 | Omarchy 握手（环境层） | 「帮我把 Omarchy 桌面调一下。」 | 握手后交给 Omarchy 的 `omarchy` skill；ZYX 只报版本/主题/默认 agent 与安装状态 | 不新增额外生产路由；不改 `/usr/share/omarchy`；不复制 Omarchy 技能 |
 
 ## 回归执行
 

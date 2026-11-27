@@ -1,9 +1,10 @@
 # 路由判定表
 
-## 1. 八类原料判定信号
+## 1. 八类原料 + R0 手机工具层判定信号
 
 | 目标 | 原料类型 | 典型信号（原话/素材） | 产物形态 | 边界（不要误分流） |
 |---|---|---|---|---|
+| **R0 Pinky** `pinky` | 手机操作（工具层） | 「用手机点外卖」「在手机上发微信」「帮我操作这个 App」「刷一下手机」「手机自动化」「看一下我手机屏幕」；需要真实 iPhone/Android 上的点击、输入、滑动 | 手机上完成的操作结果 + 截图/状态说明 | 不是内容生产，也不是蒸馏；需要 Pinky 桌面端、手机连接与 `pinky` MCP。没有 MCP 时只给安装指引，不假装已操作。 |
 | **R1 女娲** `nuwa-skill` | 一个人 | 「乔布斯怎么想」「芒格的思维方式」「蒸馏 XX」「做个 XX 视角」「学他的决策习惯」；素材是某人的著作、访谈、演讲、聊天记录 | 人物视角 Skill（心智模型 / 招式 / 启发式 / 声音 / 边界） | 不做行业打法、不做书里的通用方法论；作者人设扮演归这里，不归仓颉 |
 | **R2 大师** `master-skill` | 一个细分行业 | 「我是做跨境电商的」「帮我蒸一个 AI 基础设施大师」「让 agent 变成 X 行资深人」；原料是行业资料、岗位实践、工具栈 | 行业 Master Skill（镜片 / playbook / 表达 DNA / 质量基准 / 反模式 / 时效层），含人物 sub-skill | 粒度是细分领域，不覆盖泛行业；不做单一人物复刻 |
 | **R3 仓颉** `cangjie-skill` | 长内容 | 「拆《穷查理宝典》」「把这个 B 站视频/播客/课程/访谈做成 skill」；原料是书、长视频转写、播客文字稿、课程稿、长文 | 原子能力卡 + 编译 Skill 包（single / pack） | 不做书摘、读后感、作者角色扮演；纯观点/评论类内容不蒸馏 |
@@ -13,6 +14,8 @@
 | **R7 知识库** `wiki-vault` | 长期知识库（个人/领域 Wiki） | 「建一个关于 X 的知识库」「把这篇/这本书加进我的 X 库」「我库里关于 X 都有什么结论」「体检一下我的库」；原料是持续要往里喂的文章/论文/转写/数据 | 持续累积的 Obsidian Markdown 知识库（摘要/实体/概念/对比/综述页 + 索引/日志/热缓存） | 只要一次性拆成 Skill 包走 R3；人物/行业深挖走 R1/R2；眼下判断走 R4；不从零生产影视内容 |
 
 ### 信号冲突时的裁决
+- 既像「手机操作」又像「内容生产」：先看是否要在真实手机上点/输/滑；是则 R0，不是则按内容类型走 R5。
+- 既像「手机操作」又像「投资」：要打开券商 App 看行情/下单 → R0 执行 + R8 判断；只判断不改手机 → R8。
 - 既像「人」又像「行业」：看产物诉求——要「像他一样想」走 R1；要「懂这行怎么做」走 R2。
 - 既像「书」又像「人」：书里讲的通用方法走 R3；书作者本人的思维与决策走 R1。
 - 既像「生产」又像「蒸馏」：要从零做一个新片子/新脚本走 R5；要把已有材料提炼成可复用方法包走 R3。
@@ -41,7 +44,7 @@
 
 对每个蒸馏器，按以下顺序解析本机绝对路径，找到第一个存在 `SKILL.md` 的目录：
 
-1. 环境变量（若设置）：`$NUWA_SKILL_DIR`、`$MASTER_SKILL_DIR`、`$CANGJIE_SKILL_DIR`、`$DBS_SKILL_DIR`。
+1. 环境变量（若设置）：`$NUWA_SKILL_DIR`、`$MASTER_SKILL_DIR`、`$CANGJIE_SKILL_DIR`、`$DBS_SKILL_DIR`、`$PINKY_SKILL_DIR`。
 2. zyx 所在的同级 skills 目录（安装器把内置兄弟技能复制在 zyx 旁边）。
 3. 本机宿主 skill 目录依次探测：
    - `~/.claude/skills/<repo>`
@@ -54,6 +57,7 @@
 
 | 代号 | 目录名 | 上游仓库 / 来源 |
 |---|---|---|
+| R0 | `pinky` | https://github.com/DIYgod/pinky（随仓库内置，Apache-2.0；需另装 App/MCP） |
 | R1 | `nuwa-skill` | https://github.com/alchaincyf/nuwa-skill（git，必需） |
 | R2 | `master-skill` | https://github.com/swaylq/master-skill（git，必需） |
 | R3 | `cangjie-skill` | https://github.com/kangarooking/cangjie-skill（git，必需） |
@@ -70,4 +74,4 @@
 
 ## 5. 环境层例外（Omarchy）
 
-Omarchy / Hyprland / 桌面主题 / 快捷键等请求不是「原料类型」，**不进 R1–R7**：先跑 `../scripts/omarchy-bridge.py status` 做只读握手，再交给 Omarchy 自带的 `omarchy` skill 执行。ZYX 不改 `/usr/share/omarchy`、不自动写 `~/.agents/AGENTS.md`、不新增 R8。
+Omarchy / Hyprland / 桌面主题 / 快捷键等请求不是「原料类型」，**不进 R1–R8**：先跑 `../scripts/omarchy-bridge.py status` 做只读握手，再交给 Omarchy 自带的 `omarchy` skill 执行。ZYX 不改 `/usr/share/omarchy`、不自动写 `~/.agents/AGENTS.md`、不新增额外生产路由。手机操作走 R0，不是 Omarchy 例外。

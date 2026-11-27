@@ -17,6 +17,7 @@
 #
 # 设计原则：这是“多技能包”的安装器，不是单个 SKILL.md。它先拿到完整仓库，
 # 再调用仓库自带的 scripts/install.sh，保证内置技能和外部依赖都按清单处理。
+# 仓库根级 SKILL.md 是 zyx-installer 入口，它会让 AI 回来调用本脚本。
 
 set -euo pipefail
 
@@ -98,12 +99,14 @@ bash scripts/install.sh "${args[@]}"
 echo
 echo "== 完成 =="
 cat <<'MSG'
-ZYX 已安装。新开一个对话，直接说：
+ZYX 已安装（19 个技能：18 个内置 + R0 Pinky 手机操作）。新开一个对话，直接说：
 
   用 ZYX 帮我……
+
+R0 手机操作还需要另装 Pinky 桌面端、连接手机并接入 MCP；步骤见安装目录下的 pinky/SETUP.md。
 
 如果自检提示缺外部依赖，重跑：
   curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash
 
-不要只从 GitHub 搜索“zyx skill”：ZYX 是 18 个技能的多技能包，仓库根目录故意没有单个 SKILL.md。
+不要只从 GitHub 搜索“zyx skill”：ZYX 是多技能包，根目录 SKILL.md 只是 zyx-installer 安装入口。
 MSG

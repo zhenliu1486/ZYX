@@ -66,6 +66,30 @@ while IFS=$'\x1f' read -r id dir source required parent url install notes; do
 done < <(python3 "$SCRIPT_DIR/deps.py" deps)
 echo
 
+echo "## 2b. Pinky（R0 手机操作，可选）"
+pinky_skill="$(find_local pinky || true)"
+[ -n "$pinky_skill" ] && pinky_skill="$(cd "$pinky_skill" && pwd)"
+[ -n "$pinky_skill" ] && echo "  ✅ pinky 技能已装 → $pinky_skill" || echo "  ⚠ 未检测到 pinky 技能（R0 可选；重装 ZYX 可补）"
+pinky_bin=""
+if command -v pinkyctl >/dev/null 2>&1; then
+  pinky_bin="$(command -v pinkyctl)"
+elif [ -x "/Applications/Pinky.app/Contents/MacOS/Pinky" ]; then
+  pinky_bin="/Applications/Pinky.app/Contents/MacOS/Pinky"
+elif [ -x "$HOME/Applications/Pinky.app/Contents/MacOS/Pinky" ]; then
+  pinky_bin="$HOME/Applications/Pinky.app/Contents/MacOS/Pinky"
+elif [ -x "$HOME/.local/pinky.app/pinky" ]; then
+  pinky_bin="$HOME/.local/pinky.app/pinky"
+elif [ -x "/opt/pinky/pinky" ]; then
+  pinky_bin="/opt/pinky/pinky"
+fi
+if [ -n "$pinky_bin" ]; then
+  echo "  ✅ Pinky 桌面端 → $pinky_bin"
+  echo "  ℹ 还需连接手机并在宿主接入 pinky MCP；步骤: ${pinky_skill:-skills/pinky}/SETUP.md"
+else
+  echo "  ℹ 未检测到 Pinky 桌面端（R0 需要另外安装并连接手机；见 ${pinky_skill:-skills/pinky}/SETUP.md）"
+fi
+echo
+
 echo "## 3. 文件完整性（自身 + 已安装的内置技能）"
 INTEGRITY_TARGETS=("$ZYX_DIR")
 while IFS=$'\x1f' read -r id dir source required parent url install notes; do

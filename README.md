@@ -1,6 +1,6 @@
 # ZYX · Agent Skill 总调度台
 
-一个薄壳路由入口 Skill：判断原料属于「人 / 行业 / 长内容 / 当下问题 / 内容生产 / 产物迭代 / 长期知识库 / 投资决策」，转发给对应独立 Skill，统一收口产物。被转发的蒸馏器保持独立、各自追上游 git 更新；公共校验、质检、可信度、产物规范与 Darwin 式压测抽成 `shared/` 共享底座。
+一个薄壳路由入口 Skill：判断原料属于「人 / 行业 / 长内容 / 当下问题 / 内容生产 / 产物迭代 / 长期知识库 / 投资决策」，转发给对应独立 Skill，统一收口产物；另外提供 R0 手机操作工具层（Pinky，可选）。被转发的蒸馏器保持独立、各自追上游 git 更新；公共校验、质检、可信度、产物规范与 Darwin 式压测抽成 `shared/` 共享底座。
 
 ## 一句话安装
 
@@ -22,12 +22,13 @@ curl -fsSL https://raw.githubusercontent.com/zhenliu1486/ZYX/main/bootstrap.sh |
 curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash -s -- --no-deps
 ```
 
-> **为什么 AI 会说“没找到”**：ZYX 是 18 个技能的多技能包，根目录故意没有单个 `SKILL.md`；豆包技能安装器只认根级 `SKILL.md`，不会递归找 `skills/`。给 AI 固定 URL，不要让它自己搜 GitHub。豆包上传包与详细说明见 [INSTALL.md](INSTALL.md)。
+> **根目录现在有一个 `SKILL.md`，但它只是安装器**：`name: zyx-installer`。它让只认根级 `SKILL.md` 的宿主/豆包上传器能找到入口，然后取仓库并运行 `bootstrap.sh`；它不会把 ZYX 变成单个技能。ZYX 仍是 19 个技能的多技能包，安装器会复制整个 `skills/` 树。豆包上传包与公开上架说明见 [INSTALL.md](INSTALL.md)。
 
 ## 仓库结构
 
 ```
 ZYX/
+├── SKILL.md                  # 根级安装器（zyx-installer，不是 ZYX 本体）
 ├── skills/
 │   ├── zyx/                 # 第 1 层：入口路由调度台（薄壳）
 │   │   ├── SKILL.md
@@ -37,20 +38,22 @@ ZYX/
 │   │   ├── scripts/          # 路由解析、自注册、静默更新、自检、look.py、omarchy-bridge.py
 │   │   ├── shared/          # 第 3 层：共享底座（校验/质检/可信度/规范/压测）
 │   │   └── evals/           # 路由回归用例
+│   ├── pinky/                # R0 手机操作（Pinky 上游 SKILL + SETUP）
 │   ├── video-studio/         # R5 影视/短剧/漫剧制作聚合层（内部路由 9 个子技能）
 │   ├── director-camera-composition/ # R5 导演运镜/机位/构图（内置）
 │   ├── ai-camera-shots/      # R5 镜头语言/分镜/转场（内置，MIT 上游）
 │   ├── wiki-vault/           # R7 长期知识库（raw/ 只读 → wiki/ 编译）
 │   └── ashare-four-dim-decision/  # R8 投资决策总控（附 4 个四维子技能）
 ├── docs/
-│   ├── doubao/              # 豆包 personal agent 人设卡
+│   ├── doubao/              # 豆包 personal agent 人设卡、公开上架材料
 │   ├── research/            # 设计与决策记录
 │   └── promo/               # 对外素材
 ├── bootstrap.sh             # 一行安装入口（curl | bash）
-├── INSTALL.md               # 安装说明（含豆包上传包）
+├── INSTALL.md               # 安装说明（含豆包上传包/公开上架）
 ├── scripts/install.sh        # 一键安装（含内置技能）
 ├── scripts/sync-hosts.sh     # 同步到本机所有已存在的宿主
-├── scripts/package-doubao.sh # 打成豆包「上传技能」可用的 zip
+├── scripts/package-doubao-installer.sh # 打成豆包「上传技能」可用的 zip
+├── scripts/package-doubao-public.sh    # 打成公开上架用的单技能 zip
 ├── .gitignore
 └── LICENSE
 ```
@@ -59,6 +62,7 @@ ZYX/
 
 | 原料类型 | 转发到 | 上游 / 来源 |
 |---|---|---|
+| 手机操作（点外卖/发微信/刷 App） | `pinky`（R0，工具层） | DIYgod/pinky（内置 SKILL；需另装 App/MCP） |
 | 人（思维方式 / 名人 OS） | 女娲 `nuwa-skill` | alchaincyf/nuwa-skill |
 | 细分行业 | 大师 `master-skill` | swaylq/master-skill |
 | 长内容（书/视频/播客/课程/访谈） | 仓颉 `cangjie-skill` | kangarooking/cangjie-skill |
@@ -68,7 +72,7 @@ ZYX/
 | 长期知识库（个人/领域 Wiki） | `wiki-vault` | 本仓库 `skills/wiki-vault` |
 | 投资 / 股票 / 波段 / 超短线 | `ashare-four-dim-decision`（+ 情绪/风口/资金/技术四子技能） | 本仓库 `skills/ashare-*` |
 
-> R1–R4 为外部独立蒸馏器，需与本仓库 Skill 同机安装；R5 / R7 / R8 随本仓库提供。
+> R1–R4 为外部独立蒸馏器，需与本仓库 Skill 同机安装；R5 / R6 / R7 / R8 随本仓库提供；R0 `pinky` 技能随仓库内置，但要真正操控手机还需另装 Pinky 桌面端、连接手机并在宿主接入 MCP（见 [skills/pinky/SETUP.md](skills/pinky/SETUP.md)）。
 
 ## 安装
 
@@ -92,6 +96,28 @@ cp -r skills/video-studio ~/.claude/skills/video-studio
 
 依赖：Bash、git；仓颉本体另需 Python 3.10+ 与 PyYAML。首次调用 zyx 时会自动探测环境并注册后台周检（幂等）。
 
+## 在豆包里安装：三种路径
+
+**路径 1 · 有终端（真正一句话）**
+
+```bash
+curl -fsSL https://cdn.jsdelivr.net/gh/zhenliu1486/ZYX@main/bootstrap.sh | bash
+```
+
+装完 ZYX 会落到本地 skills 目录；豆包桌面端会自动读取本地技能（云电脑与本地电脑的技能列表不共用，云电脑要再装一次）。
+
+**路径 2 · 豆包「上传技能」（一次上传，之后一句话）**
+
+1. 下载 `ZYX-豆包安装器-v1.9.0.zip`（Release asset 或 `dist/doubao/zyx-installer.zip`）。
+2. 豆包 PC →「技能 · 连接器 · 伙伴」→「我的技能」→「上传技能」→ 拖入 zip。
+3. 新开对话说「帮我安装 zyx」；安装器会运行 `bootstrap.sh`，装完 19 个技能。
+
+**路径 3 · 公开上架（所有豆包用户可见）**
+
+豆包开放平台「公开上架」需要企业资质认证，ZIP ≤16 MB、≤1024 条目、单文件 ≤2 MB，平台运营审核通常 3 个工作日。上架后用户可在「豆包推荐」搜到并一键安装；这不是聊天里自动搜 GitHub，而是商店安装。提交材料见 [INSTALL.md](INSTALL.md) 与 [docs/doubao/public-listing.md](docs/doubao/public-listing.md)。
+
+> 不要承诺“所有豆包用户只发一句话就自动从 GitHub 装好”。豆包官方自定义技能走根级 `SKILL.md` 的上传包；公开市场要审核。根级 `SKILL.md` 能提高被识别的概率，但不替代上架。
+
 ## 在豆包 personal agent 里用
 
 豆包侧没有公开的个人 Agent API，能接的是三层：**技能上传 + 记忆注入 + 定时巡检**。
@@ -107,7 +133,7 @@ bash scripts/package-doubao.sh --only wiki-vault
 
 ## Omarchy 握手、Context Card 与 Look Gate
 
-不新增 R9 路由；只借 Omarchy 的三个工程默认，补 ZYX 的“可验证能力”：
+不新增额外生产路由；R0 手机操作是工具层，不属于 Omarchy 环境操作。只借 Omarchy 的三个工程默认，补 ZYX 的“可验证能力”：
 
 ```bash
 # 1. 只读握手：Omarchy 版本/主题/默认 agent + ZYX/R7/context 卡状态
