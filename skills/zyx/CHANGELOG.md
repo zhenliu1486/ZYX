@@ -2,6 +2,16 @@
 
 本文件记录 zyx 总调度台的版本变更。版本号遵循 SemVer（MAJOR.MINOR.PATCH）。
 
+## 1.9.1 — 2026-11-28
+
+### 新增 · 人物类请求接上人物库 `zhenliu`
+- `references/routing-table.md` 新增「R1 前置：人物库 `zhenliu`」：五类原话对应四种去向，并写清四条裁决——有点名就查库、库里有不重造、库里没有转女娲且造完回库、不点名不进库；补一句与 R0 手机层、R5 生产层互不干扰。
+- 第 2 节衔接补「人物库 ↔ 女娲」双向：库只做路由与存量，女娲只造，造完回库登记并重建索引；嵌套不超过一层。
+- `SKILL.md` 第 2 层表新增「R1·库」一行；Step 1 加「人物类先过库」；Step 3 增 R1·库 条目，并给 R1 女娲补「蒸馏前先查库」。
+- 边界新增一条：库里已有的人物包不重复蒸馏，要改走 R6 迭代。
+- `scripts/route.sh` 新增 `persona` 路由（`$ZHENLIU_DIR` 可覆盖）；`route-selftest.py` 用例由 8 类增至 10 类（含 R0 phone 与 R1·库）；`evals/routing-cases.md` 补 5 条人物库用例。
+- `deps/manifest.json` 登记 `R1-lib`：git 源 `zhenliu1486/zhenliu`，可选但推荐——装了优先查库，没装 R1 照常工作。
+
 ## 1.9.0 — 2026-11-27
 
 ### 新增 · R0 手机操作（Pinky）

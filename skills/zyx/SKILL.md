@@ -5,7 +5,7 @@ license: MIT
 compatibility: 兼容 Claude Code / Codex / OpenClaw / Hermes / Kiro / Cline 等 Agent Skills 标准宿主；引用外部蒸馏器路径，需与它们同机安装；R0 手机操作另需 Pinky 桌面端与 MCP。
 metadata:
   author: "ZYX"
-  version: "1.9.0"
+  version: "1.9.1"
   layer: "1-router"
   schema: "agentskills.io"
 allowed-tools: Read, Write, Edit, Bash, WebSearch, WebFetch
@@ -53,6 +53,7 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 |---|---|---|---|
 | R0 | `pinky` | DIYgod/pinky（随仓库内置） | **手机操作（可选工具层）**：通过 Pinky 的 `phone_*` MCP 工具操作真实 iPhone/Android；需另装 Pinky 桌面端、连接手机并在宿主接入 MCP。ZYX 只路由，不替代人工审批。 |
 | R1 | 女娲 `nuwa-skill` | alchaincyf/nuwa-skill | 蒸馏**一个人**的思维方式 / 名人 OS |
+| R1·库 | 人物库 `zhenliu` | zhenliu1486/zhenliu | **已蒸馏人物的总路由与库**：先查库，命中直接读人物包；库里没有才转 R1 女娲，造完回库 |
 | R2 | 大师 `master-skill` | swaylq/master-skill | 蒸馏**一个细分行业**的 Master OS（Phase 3 内部调女娲出人物 sub-skill） |
 | R3 | 仓颉 `cangjie-skill` | kangarooking/cangjie-skill | 蒸馏**长内容**（书/长视频/播客/课程/访谈）的方法论为 Skill 包 |
 | R4 | dbs 家族 | dontbesilent2025/dbskill | 处理**当下问题**：商业诊断、文案、决策复盘、协作派单（不产出新 Skill） |
@@ -74,6 +75,7 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 
 ### Step 1 · 读取原料，判定类型
 先读用户原话、附件和对话已有事实，不要求用户重复背景。按 `references/routing-table.md` 的判定信号，把原料归入八类之一（R1 人 / R2 行业 / R3 长内容 / R4 当下问题 / R5 内容生产 / R6 产物迭代 / R7 长期知识库 / R8 投资决策）；如果用户要操作真实手机（点外卖、发微信、刷 App、手机自动化），走 R0 `pinky` 工具层，不混入八类原料；信号冲突或模糊时，**一次问清**属于哪类，不要猜着分流。
+> 人物类请求（「用某人的视角」「某人会怎么看」「库里有哪些人」「比较两个人」）先过 `zhenliu` 查库，不要直接进女娲重造。
 
 ### Step 2 · 解析目标蒸馏器的绝对路径
 按 `references/routing-table.md` 末尾的「路径解析」找到对应蒸馏器在本机的安装目录。路径解析顺序：环境变量覆盖 → 本机各宿主 skill 目录探测 → 报错并提示安装。**禁止把蒸馏器方法论复制进 zyx 目录**，zyx 只引用路径。
@@ -81,7 +83,8 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 ### Step 3 · 转发并委派
 把任务连同原料、约束、产物目录位置交给对应蒸馏器执行：
 - **R0 手机操作**：用户要操作真实手机时，转发 `pinky`；先确认 Pinky 桌面端已安装、手机已连接、宿主已接入 `pinky` MCP。只读任务用 `read_only`，付款/下单/发送/删除等由手机端人工批准；Agent 不能代批，也不能绕过。Pinky 不在当前机器或 MCP 不可达时，明确说明“技能已装但工具未接通”，不要假装已经操控手机。
-- **R1 女娲**：明确人名 → 直接蒸馏；只有模糊困惑 → 先走女娲的诊断推荐再蒸馏。
+- **R1 女娲**：明确人名 → 直接蒸馏；只有模糊困惑 → 先走女娲的诊断推荐再蒸馏。**蒸馏前先查 `zhenliu`**：库里已有同名人物包时直接用，不重造。
+- **R1·库 zhenliu**：人物视角 / 人物库查询的入口。命中人物包按其边界作答；未命中转女娲，产物回库（`personas/<id>/` + `catalog` 重建）。库里的比较按「共识 / 分歧 / 各自盲区」输出，不打分。
 - **R2 大师**：输入细分行业；其 Phase 3 调女娲生成 top3 人物 sub-skill 时，按女娲路径衔接（见 `references/routing-table.md` 衔接段）。
 - **R3 仓颉**：长内容需先有文字稿/字幕转写；**无文字稿时先走 `dbs-video-extract` 或本地转写**，拿到文字稿后再进 RIA-TV++ 流水线，压测兼容达尔文（见 `shared/darwin/`）。
 - **R4 dbs**：当下问题，按 dbs 主调度台路由到具体子 skill；dbs 不生成可安装 Skill。
@@ -109,6 +112,7 @@ zyx/                                  # 第 1 层：入口路由（本目录，�
 - 投资类只产出研究性操作方案：不代下单、不承诺收益、不隐藏风险；资金量、交易周期、风险偏好不明时先问清再给方案。
 - 不做无确认的远端动作（建仓、push、tag、Release 单独授权，见 `references/routing-table.md` 发布段）。
 - 不把书摘、读后感、作者人设扮演交给仓颉（那是女娲的活）；路由表已写明边界。
+- 人物库已有的人物包不重复蒸馏：重造会产生第二个同名包，索引与版本会打架；要改已有包走 R6 迭代，不重新造一个。
 - 知识库层不写 HTML、不装 Obsidian 插件、不改用户既有 Obsidian 库结构；同步接口仅预留。
 - 本机环境/桌面（Omarchy/Hyprland）操作不属于 R1–R8 任一类：只做只读握手，执行交给 Omarchy 自己的 skill，不新增额外生产路由。
 - 手机操作是 R0 工具层，不是新的内容生产路由；没有 Pinky App/MCP 时只输出安装指引，不输出“已操控”的假结果。

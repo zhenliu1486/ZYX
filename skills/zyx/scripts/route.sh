@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # route.sh — 打印路由决策与被调 Skill 路径（zyx 第 1 层薄壳辅助脚本）
-# 用法: route.sh <原料类型: person|industry|content|problem|production|iterate|wiki|invest|phone>
+# 用法: route.sh <原料类型: persona|person|industry|content|problem|production|iterate|wiki|invest|phone>
 # 仅做路径解析与提示，不执行蒸馏、不修改任何文件。
 
 set -euo pipefail
@@ -22,6 +22,13 @@ resolve() { # $1=目录名  $2=环境变量名
 }
 
 case "$TARGET" in
+  persona)
+    echo "路由 → R1·库 zhenliu 人物库（先查库：命中读人物包，未命中转 R1 女娲造完回库）"
+    p="$(resolve zhenliu ZHENLIU_DIR)" || { echo "未检测到 zhenliu 人物库，请先安装：git clone https://github.com/zhenliu1486/zhenliu && cd zhenliu && bash scripts/install.sh" >&2; exit 2; }
+    echo "$p"
+    echo "衔接：库里没有该人物时转 nuwa-skill 蒸馏，产物回库登记"
+    ;;
+
   phone)
     echo "路由 → R0 手机操作 pinky（工具层；需要 Pinky App + 手机 + MCP）"
     p="$(resolve pinky PINKY_SKILL_DIR)" || { echo "未检测到 pinky 技能，请重装 ZYX 或从 https://github.com/DIYgod/pinky 安装" >&2; exit 2; }
@@ -73,7 +80,8 @@ case "$TARGET" in
     echo "$p"
     ;;
   *)
-    echo "用法: route.sh <person|industry|content|problem|production|iterate|wiki|invest|phone>"
+    echo "用法: route.sh <persona|person|industry|content|problem|production|iterate|wiki|invest|phone>"
+    echo "  persona    人物视角/人物库 → zhenliu（命中就用，未命中转女娲）"
     echo "  person     人     → 女娲"
     echo "  industry   行业   → 大师"
     echo "  content    长内容 → 仓颉"

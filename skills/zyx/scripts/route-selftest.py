@@ -17,6 +17,7 @@ ROUTE = HERE / "route.sh"
 
 CASES = [
     ("phone", "pinky", "PINKY_SKILL_DIR"),
+    ("persona", "zhenliu", "ZHENLIU_DIR"),
     ("person", "nuwa-skill", "NUWA_SKILL_DIR"),
     ("industry", "master-skill", "MASTER_SKILL_DIR"),
     ("content", "cangjie-skill", "CANGJIE_SKILL_DIR"),

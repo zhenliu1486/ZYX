@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "zyx_version": "1.9.0",
+  "zyx_version": "1.9.1",
   "description": "ZYX 路由调度台的依赖声明清单。doctor / updater / install 脚本统一从本文件读取，不在脚本里硬编码依赖清单。",
   "host_dirs": [
     "$HOME/.claude/skills",
@@ -36,6 +36,17 @@
       "url": "https://github.com/alchaincyf/nuwa-skill",
       "install": "git clone https://github.com/alchaincyf/nuwa-skill",
       "notes": "人物视角蒸馏器；R2 大师 Phase3 会内部委派给它。"
+    },
+    {
+      "id": "R1-lib",
+      "route": "人物库（已蒸馏人物的路由与库）",
+      "dir": "zhenliu",
+      "source": "git",
+      "required": false,
+      "parent": null,
+      "url": "https://github.com/zhenliu1486/zhenliu",
+      "install": "git clone https://github.com/zhenliu1486/zhenliu && cd zhenliu && bash scripts/install.sh",
+      "notes": "R1 的前置闸门：人物类请求先查库，命中直接读人物包；未命中转女娲，造完回库登记。装上则优先查库，未装时 R1 照常工作。"
     },
     {
       "id": "R2",
